@@ -168,7 +168,7 @@ To help you understand the expected level of detail, this boilerplate includes:
 
 ### Example Agent Specs
 
-The `agent-specs/` files contain example content for a fictional TypeScript/NestJS project (our organization's recommended backend stack). Each file has a prominent banner reminding you to replace it with your own content. Use Prompt 0 (`user-development/prompts/0-bootstrap-specs.md`) to generate your own — the examples are there to demonstrate the structure and level of detail, not to be used as-is.
+The `agent-specs/` files contain example content for a fictional TypeScript/NestJS project. Each file has a prominent banner reminding you to replace it with your own content. Use Prompt 0 (`user-development/prompts/0-bootstrap-specs.md`) to generate your own — the examples are there to demonstrate the structure and level of detail, not to be used as-is.
 
 The one exception is `agent-workflow.md`, which is **system-level** — it defines how agents interact with the SDD pipeline (execution rules, blast radius, commit timing, spec/doc update rules) and typically doesn't need customization regardless of your tech stack.
 
@@ -202,7 +202,7 @@ This boilerplate is **language-agnostic** at the workflow level. The pipeline, t
 - `agent-development/agent-specs/agent-instructions.md`, `application-overview.md`, `architecture-breakdown.md` — replace with your project's details using Prompt 0
 - `agent-development/pending/1-3-*.md` — the example pending requests assume TypeScript/NestJS
 
-The example content uses TypeScript/NestJS because that is our organization's recommended backend stack (NestJS for backend, Next.js for frontend). Most of our projects are TypeScript-focused, though we occasionally use other languages. The workflow itself has been battle-tested with Go and TypeScript projects, and the same structure works for Python, Rust, Java, or any language where you want structured, human-supervised AI development.
+The example content uses TypeScript/NestJS because that is part of my preferred stack (NestJS for backend, Next.js for frontend). Most of our projects are TypeScript-focused, though we occasionally use other languages. The workflow itself has been battle-tested with Go and TypeScript projects, and the same structure works for Python, Rust, Java, or any language where you want structured, human-supervised AI development.
 
 ### What to Keep vs. Replace
 

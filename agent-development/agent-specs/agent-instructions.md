@@ -23,9 +23,8 @@
   - The "Error Handling" section (adapt to your error strategy)
   - The "Testing" section (match your test framework and coverage expectations)
   
-  NOTE: The examples below use TypeScript/NestJS because that is our
-  organization's recommended backend stack (NestJS for backend, Next.js for
-  frontend). If your project uses a different framework or language, replace
+  NOTE: The examples below use TypeScript/NestJS.
+  If your project uses a different framework or language, replace
   the framework-specific sections entirely — but keep the same heading
   structure so agents know where to look.
 -->
