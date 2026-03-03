@@ -123,6 +123,5 @@ A well-designed Makefile eliminates the "how do I run this again?" problem for e
 - [ ] `make check` runs lint, build, and test in sequence
 - [ ] All targets are declared in `.PHONY`
 - [ ] No port numbers, passwords, or database names are hardcoded in the Makefile
-- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if structural changes were introduced
-- [ ] Update `agent-development/agent-specs/FOLDER-STRUCTURE.md` if new files or directories were introduced
+- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if structural changes, new files, or directories were introduced
 - [ ] Update `README.md` with a reference to `make help` and key Makefile commands

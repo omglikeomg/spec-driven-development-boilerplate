@@ -54,7 +54,6 @@
       "complexity": "small",
       "context_files": [
         "agent-development/agent-specs/architecture-breakdown.md",
-        "agent-development/agent-specs/FOLDER-STRUCTURE.md",
         "agent-development/agent-specs/agent-instructions.md",
         "agent-development/agent-specs/git-workflow.md"
       ],

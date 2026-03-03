@@ -13,10 +13,9 @@ Before starting, the implementing agent **must** read and internalize these file
 | Document | Path | Purpose |
 |---|---|---|
 | Application Overview | `agent-development/agent-specs/application-overview.md` | Understand what the tool does |
-| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Understand folder structure, design patterns, tech stack |
+| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Folder structure, design patterns, tech stack, module dependencies |
 | Agent Instructions | `agent-development/agent-specs/agent-instructions.md` | Coding standards, dos/don'ts, workflow |
 | Git Workflow | `agent-development/agent-specs/git-workflow.md` | Branching strategy, commit conventions, versioning expectations |
-| Folder Structure | `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Quick-reference project directory tree and module dependency graph |
 | Task Definition | `agent-development/pending/<N>-<name>.md` | The task being implemented |
 <!-- Add any other relevant reference files (existing source files, previous plans, etc.) -->
 

@@ -20,8 +20,7 @@ Initialize the Node.js project with Yarn Classic, install all core NestJS depend
 
 | Path | Reason |
 |---|---|
-| `agent-development/agent-specs/architecture-breakdown.md` | Technology stack reference (which packages to install) |
-| `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Confirms project root layout expectations |
+| `agent-development/agent-specs/architecture-breakdown.md` | Technology stack, project root layout, and module dependencies |
 
 ### Allowed Write Access
 

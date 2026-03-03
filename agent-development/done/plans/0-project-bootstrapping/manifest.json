@@ -49,8 +49,7 @@
       "status": "done",
       "complexity": "medium",
       "context_files": [
-        "agent-development/agent-specs/architecture-breakdown.md",
-        "agent-development/agent-specs/FOLDER-STRUCTURE.md"
+        "agent-development/agent-specs/architecture-breakdown.md"
       ],
       "output_files": [
         "package.json",
@@ -69,7 +68,7 @@
       "status": "done",
       "complexity": "large",
       "context_files": [
-        "agent-development/agent-specs/FOLDER-STRUCTURE.md",
+        "agent-development/agent-specs/architecture-breakdown.md",
         "package.json",
         "tsconfig.json"
       ],
@@ -137,14 +136,12 @@
       "complexity": "small",
       "context_files": [
         "agent-development/agent-specs/architecture-breakdown.md",
-        "agent-development/agent-specs/FOLDER-STRUCTURE.md",
         "agent-development/agent-specs/agent-instructions.md",
         "package.json",
         "src/app.module.ts"
       ],
       "output_files": [
-        "agent-development/agent-specs/architecture-breakdown.md",
-        "agent-development/agent-specs/FOLDER-STRUCTURE.md"
+        "agent-development/agent-specs/architecture-breakdown.md"
       ],
       "verification_commands": [],
       "rollback_plan": "Revert spec files to their pre-plan state via git checkout."

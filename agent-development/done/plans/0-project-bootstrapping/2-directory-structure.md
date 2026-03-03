@@ -8,7 +8,7 @@
 
 ## Objective
 
-Create the full directory hierarchy defined in `FOLDER-STRUCTURE.md` and populate every module with minimal placeholder files — module, controller, service, entity, and DTO stubs — that compile without errors. After this stage, `yarn build` succeeds and the NestJS application can bootstrap (though it will fail to connect to a database since Docker isn't set up yet).
+Create the full directory hierarchy defined in `architecture-breakdown.md` and populate every module with minimal placeholder files — module, controller, service, entity, and DTO stubs — that compile without errors. After this stage, `yarn build` succeeds and the NestJS application can bootstrap (though it will fail to connect to a database since Docker isn't set up yet).
 
 ---
 
@@ -20,8 +20,7 @@ Create the full directory hierarchy defined in `FOLDER-STRUCTURE.md` and populat
 
 | Path | Reason |
 |---|---|
-| `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Canonical directory tree to replicate |
-| `agent-development/agent-specs/architecture-breakdown.md` | Module responsibilities and design patterns |
+| `agent-development/agent-specs/architecture-breakdown.md` | Canonical directory tree, module responsibilities, and design patterns |
 | `agent-development/agent-specs/agent-instructions.md` | Naming conventions and NestJS-specific rules |
 | `package.json` | Confirm installed dependencies (from Stage 1) |
 | `tsconfig.json` | Confirm compiler options |
@@ -53,7 +52,7 @@ Create the full directory hierarchy defined in `FOLDER-STRUCTURE.md` and populat
 
 **Action:** create directories
 
-Run the following to create every directory defined in `FOLDER-STRUCTURE.md`:
+Run the following to create every directory defined in `architecture-breakdown.md`:
 
 ```bash
 mkdir -p src/config
@@ -295,11 +294,11 @@ All files must contain valid TypeScript that compiles. Empty classes with the co
 | Command | Expected Result |
 |---|---|
 | `yarn build` | Exit code 0, no type errors, `dist/` directory populated |
-| `find src -type d \| sort` | Matches the directory tree in `FOLDER-STRUCTURE.md` |
+| `find src -type d \| sort` | Matches the directory tree in `architecture-breakdown.md` |
 
 ### Manual Verification
 
-- [ ] Every module listed in `FOLDER-STRUCTURE.md` has at minimum a `.module.ts`, `.controller.ts` (where applicable), and `.service.ts`
+- [ ] Every module listed in `architecture-breakdown.md` has at minimum a `.module.ts`, `.controller.ts` (where applicable), and `.service.ts`
 - [ ] `src/app.module.ts` imports all feature modules
 - [ ] No file contains `any` type or `@ts-ignore` directives
 - [ ] All files follow `kebab-case` naming with role suffixes (`.module.ts`, `.service.ts`, etc.)

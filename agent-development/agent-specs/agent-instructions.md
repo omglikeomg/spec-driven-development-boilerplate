@@ -134,7 +134,7 @@ These steps apply to every task, regardless of size:
 
 1. **Verify your branch** — run `git branch --show-current` to confirm you are on a feature branch (not `main`). Extract the ticket ID from the branch name if present. See `agent-development/agent-specs/git-workflow.md` for branch naming conventions and ticket ID detection.
 2. Read the provided plan folder — start with `manifest.json` for task state and stage overview, then `specification.md` for the full context and resolved open questions.
-3. For each stage, read the stage's instruction file (e.g., `1-stage-name.md`) and the source code files listed in its "Allowed Read Access" section. Use `agent-development/agent-specs/FOLDER-STRUCTURE.md` for quick orientation if needed.
+3. For each stage, read the stage's instruction file (e.g., `1-stage-name.md`) and the source code files listed in its "Allowed Read Access" section. Use `agent-development/agent-specs/architecture-breakdown.md` for quick orientation if needed.
 4. Implement the logic, respecting the stage's blast radius — only modify files listed in "Allowed Write Access."
 5. Run the verification commands listed in the stage's "Verification" section.
 6. After each stage passes, update `manifest.json`: set the stage's `status` to `done` and increment `current_stage`.
@@ -147,7 +147,7 @@ These steps apply to every task, regardless of size:
 The TypeScript source files are the canonical reference for how the system works. When working on a task:
 
 1. **Read the source code directly** for the modules and files relevant to your current stage. The code should be well-structured and self-documenting.
-2. **Use `agent-development/agent-specs/FOLDER-STRUCTURE.md`** for quick orientation on project layout if you're unfamiliar with the directory structure.
+2. **Use `agent-development/agent-specs/architecture-breakdown.md`** for quick orientation on project layout if you're unfamiliar with the directory structure.
 3. **Respect the blast radius** — each stage file explicitly lists which files you may read and write. If you discover a dependency on an unlisted file, stop and update the manifest and stage file before proceeding.
 4. **Spec and doc updates are handled in mandatory final stages** — do not update spec files or documentation mid-plan unless a stage's instructions explicitly say to.
 

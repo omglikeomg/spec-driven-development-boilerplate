@@ -34,7 +34,7 @@ agent-development/plans/N-short-name/
 
 ## Rules
 
-1. **Read the source code directly** — the source code is the source of truth. Read the relevant files for the modules and areas you'll be planning changes to. Use `agent-development/agent-specs/FOLDER-STRUCTURE.md` for quick orientation on the project layout if needed.
+1. **Read the source code directly** — the source code is the source of truth. Read the relevant files for the modules and areas you'll be planning changes to. Use `agent-development/agent-specs/architecture-breakdown.md` for quick orientation on the project layout if needed.
 2. **Check the current project state** — look at the existing directory structure, existing source files, dependency manifests (`package.json`, `tsconfig.json`, etc.), and any previously completed plans in `agent-development/done/plans/` to understand what has already been built. Your plan must build on top of the current state, not conflict with it.
 3. **Follow the templates exactly** — use the files in `agent-development/plans/_templates/` as your structural guide:
    - `manifest.json` — copy and fill in all fields for your plan

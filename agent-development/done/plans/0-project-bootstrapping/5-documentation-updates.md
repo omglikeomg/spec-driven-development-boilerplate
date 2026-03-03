@@ -91,7 +91,7 @@ The README must include the following sections, in order:
    | mongo | mongo:7 | 27017 | Primary database |
    | redis | redis:7-alpine | 6379 | Job queue (BullMQ) |
 
-7. **Project Structure** — a condensed version of the directory tree from `FOLDER-STRUCTURE.md` (just the top two levels, not every file). Link to `FOLDER-STRUCTURE.md` for the full tree.
+7. **Project Structure** — a condensed version of the directory tree from `architecture-breakdown.md` (just the top two levels, not every file). Link to `architecture-breakdown.md` for the full tree.
 
 8. **Development Workflow** — brief mention of the SDD workflow with a link to `user-development/DEVELOPMENT-GUIDE.md` for the full process.
 

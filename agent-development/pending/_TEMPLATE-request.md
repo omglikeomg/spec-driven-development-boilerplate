@@ -43,6 +43,5 @@
 - [ ] Check 1 (e.g., project compiles with zero errors)
 - [ ] Check 2 (e.g., unit tests pass)
 - [ ] Check 3 (e.g., `README.md` updated with new configuration options)
-- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new modules or interfaces were introduced.
-- [ ] Update `agent-development/agent-specs/FOLDER-STRUCTURE.md` if new directories or significant files were introduced.
+- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new modules, interfaces, directories, or significant files were introduced.
 - [ ] Update `README.md` with latest considerations.

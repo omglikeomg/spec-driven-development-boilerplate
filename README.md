@@ -28,10 +28,9 @@ sdd-boilerplate/
 ├── agent-development/                  ← Agent-facing pipeline
 │   ├── agent-specs/                    ← Project context (read by every agent)
 │   │   ├── application-overview.md     ← What the app does (replace with yours)
-│   │   ├── architecture-breakdown.md   ← Folder structure, patterns, tech stack (replace with yours)
+│   │   ├── architecture-breakdown.md   ← Folder structure, patterns, tech stack, module deps (replace with yours)
 │   │   ├── agent-instructions.md       ← Coding standards, dos/don'ts (customize for your stack)
-│   │   ├── git-workflow.md             ← Branching, commit conventions, versioning (customize)
-│   │   └── FOLDER-STRUCTURE.md         ← Quick-reference directory tree (replace with yours)
+│   │   └── git-workflow.md             ← Branching, commit conventions, versioning (customize)
 │   ├── pending/                        ← Task requests waiting to be planned
 │   │   └── _TEMPLATE-request.md
 │   ├── plans/                          ← Plan folders waiting for approval
@@ -73,12 +72,11 @@ The four files in `agent-development/agent-specs/` contain **example content** f
 | File | What to Put Here |
 |---|---|
 | `application-overview.md` | What your app does, core workflows, key UX goals |
-| `architecture-breakdown.md` | Your folder structure, design patterns, tech stack, key decisions |
+| `architecture-breakdown.md` | Directory tree, folder descriptions, design patterns, tech stack, module dependencies, conventions |
 | `agent-instructions.md` | Coding standards, dos/don'ts, testing expectations, naming conventions |
 | `git-workflow.md` | Branching strategy, commit message format, ticket ID pattern, versioning expectations |
-| `FOLDER-STRUCTURE.md` | Your project's actual directory tree and module dependency graph |
 
-> **Tip:** The `agent-instructions.md` and `git-workflow.md` files are designed as starting points that you'll tweak over time. Every time you correct an agent manually, consider adding a rule there so it doesn't happen again. For `git-workflow.md`, you'll likely want to update the ticket ID regex pattern to match your issue tracker.
+> **Tip:** The `agent-instructions.md`, `architecture-breakdown.md`, and `git-workflow.md` files are designed as starting points that you'll tweak over time. Every time you correct an agent manually, consider adding a rule there so it doesn't happen again. For `git-workflow.md`, you'll likely want to update the ticket ID regex pattern to match your issue tracker.
 
 ### 3. Read the Development Guide
 
@@ -126,7 +124,7 @@ Follow the pipeline described in the Development Guide:
 To help you understand the expected level of detail, this boilerplate includes:
 
 ### Example Agent Specs
-All four `agent-specs/` files contain example content for a fictional TypeScript/NestJS project. Each file has a prominent banner reminding you to replace it with your own content.
+The `agent-specs/` files contain example content for a fictional TypeScript/NestJS project. Each file has a prominent banner reminding you to replace it with your own content.
 
 ### Example Request & Plan (in `done/`)
 - `agent-development/done/requests/0-project-bootstrapping.md` — shows what a well-structured task request looks like.

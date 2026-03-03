@@ -12,7 +12,7 @@ Familiarize yourself with the project context by reading the spec documents:
    - `agent-development/agent-specs/architecture-breakdown.md`
    - `agent-development/agent-specs/git-workflow.md`
 
-2. **Read the relevant source code** for the files involved in the change. Use `agent-development/agent-specs/FOLDER-STRUCTURE.md` for quick orientation on the project layout if needed. The source code is the source of truth.
+2. **Read the relevant source code** for the files involved in the change. Use `agent-development/agent-specs/architecture-breakdown.md` for quick orientation on the project layout if needed. The source code is the source of truth.
 
 3. **Verify your branch** — run `git branch --show-current` to confirm you are on a feature branch (not `main`). If you are on `main`, **STOP** and ask the human to create a feature branch first. Extract the ticket ID from the branch name if one is present (pattern: `[A-Z][A-Z0-9]+-\d+`, e.g., `PROJ-456`). See `agent-development/agent-specs/git-workflow.md` for full details on branch naming and ticket ID detection.
 
@@ -49,8 +49,7 @@ Examples of quick fixes:
 3. **Make the minimum viable change** — do not refactor surrounding code, add features, or "improve" things that aren't part of the described change. Stay focused.
 4. **Run verification checks** — after making the change, run the project's build and test commands to confirm nothing is broken. If the project has a build command (e.g., `make build`, `yarn build`, `go build ./...`), run it. If there are relevant tests, run those too.
 5. **Assess whether spec or doc updates are needed:**
-   - If the change affects the project's folder structure, update `agent-development/agent-specs/FOLDER-STRUCTURE.md`.
-   - If the change affects architectural conventions, update `agent-development/agent-specs/architecture-breakdown.md`.
+   - If the change affects the project's folder structure or architectural conventions, update `agent-development/agent-specs/architecture-breakdown.md`.
    - If the change affects user-facing behavior, update `README.md` or other relevant docs.
    - For most quick fixes, **no spec or doc updates will be needed** — but check and call it out explicitly.
 6. **Do NOT create a plan folder, request file, or manifest.** Quick fixes bypass the full pipeline.
@@ -88,7 +87,6 @@ The log file must use this format:
 
 ## Spec/Doc Updates
 
-- [ ] `FOLDER-STRUCTURE.md` — updated / not needed
 - [ ] `architecture-breakdown.md` — updated / not needed
 - [ ] `README.md` — updated / not needed
 

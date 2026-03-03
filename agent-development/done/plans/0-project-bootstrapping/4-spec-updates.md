@@ -28,8 +28,7 @@ This is the mandatory penultimate stage. Every plan must include a spec update s
 | `docker/docker-compose.yml` | Verify infrastructure services match spec descriptions |
 | `Makefile` | Verify dev workflow commands match spec descriptions |
 | `tsconfig.json` | Verify compiler settings match spec claims |
-| `agent-development/agent-specs/architecture-breakdown.md` | Current state — to be updated |
-| `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Current state — to be updated |
+| `agent-development/agent-specs/architecture-breakdown.md` | Current state — to be updated (includes directory tree, folder descriptions, module deps, conventions) |
 | `agent-development/agent-specs/agent-instructions.md` | Current state — review for accuracy |
 | `agent-development/agent-specs/application-overview.md` | Current state — review for accuracy |
 
@@ -37,8 +36,7 @@ This is the mandatory penultimate stage. Every plan must include a spec update s
 
 | Path | Reason |
 |---|---|
-| `agent-development/agent-specs/architecture-breakdown.md` | Sync with actual installed deps, module wiring, and patterns |
-| `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Sync with actual directory tree created in Stages 2–3 |
+| `agent-development/agent-specs/architecture-breakdown.md` | Sync with actual installed deps, module wiring, patterns, and directory tree created in Stages 2–3 |
 | `agent-development/agent-specs/agent-instructions.md` | Add or correct any conventions established during bootstrapping |
 
 ### Forbidden
@@ -75,12 +73,12 @@ Read through the architecture breakdown and compare each section against the act
 
 ---
 
-### Step 4.2: Audit `FOLDER-STRUCTURE.md` against reality
+### Step 4.2: Audit directory tree in `architecture-breakdown.md` against reality
 
-**File:** `agent-development/agent-specs/FOLDER-STRUCTURE.md`
+**File:** `agent-development/agent-specs/architecture-breakdown.md`
 **Action:** modify
 
-Run `find src -type f | sort` and `find docker -type f | sort` to get the actual file tree. Compare it against the tree in `FOLDER-STRUCTURE.md`.
+Run `find src -type f | sort` and `find docker -type f | sort` to get the actual file tree. Compare it against the directory tree in `architecture-breakdown.md`.
 
 1. **Project Root tree:** Update to match reality. Add any files that were created but not in the original spec (e.g., `.dockerignore`). Remove any files that were planned but not created.
 
@@ -111,15 +109,15 @@ Scan the agent instructions for any claims that conflict with what was actually 
 
 | Command | Expected Result |
 |---|---|
-| `grep -c 'FOLDER-STRUCTURE.md' agent-development/agent-specs/architecture-breakdown.md` | At least 1 match (cross-reference exists) |
+| `grep -c 'Directory Tree' agent-development/agent-specs/architecture-breakdown.md` | At least 1 match (directory tree section exists) |
 
 ### Manual Verification
 
 - [ ] `architecture-breakdown.md` — every package listed in the Technology Stack table exists in `package.json`
 - [ ] `architecture-breakdown.md` — every module path in the Folder Structure section exists on disk
-- [ ] `FOLDER-STRUCTURE.md` — the directory tree matches the output of `find src -type f | sort` (no missing or extra entries)
-- [ ] `FOLDER-STRUCTURE.md` — the module dependency graph matches the actual imports in `src/app.module.ts` and feature modules
-- [ ] `FOLDER-STRUCTURE.md` — "Last updated" line references Task 0
+- [ ] `architecture-breakdown.md` — the directory tree matches the output of `find src -type f | sort` (no missing or extra entries)
+- [ ] `architecture-breakdown.md` — the module dependency graph matches the actual imports in `src/app.module.ts` and feature modules
+- [ ] `architecture-breakdown.md` — "Last updated" line references Task 0
 - [ ] `agent-instructions.md` — build/test commands are correct (or file was reviewed and no changes needed)
 - [ ] No spec file contains stale references to packages, modules, or patterns that don't exist in the codebase
 
@@ -135,7 +133,7 @@ Scan the agent instructions for any claims that conflict with what was actually 
 If this stage fails or must be reverted:
 
 1. Revert `agent-development/agent-specs/architecture-breakdown.md` via `git checkout`
-2. Revert `agent-development/agent-specs/FOLDER-STRUCTURE.md` via `git checkout`
+2. (No separate folder structure file to revert — directory tree is now part of `architecture-breakdown.md`)
 3. Revert `agent-development/agent-specs/agent-instructions.md` via `git checkout` (if modified)
 4. Set this stage's `status` to `failed` in `manifest.json`
 

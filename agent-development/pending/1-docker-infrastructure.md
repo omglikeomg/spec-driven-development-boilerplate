@@ -66,6 +66,5 @@ This task is a prerequisite for any task that requires a running database, cache
 - [ ] `app` service has `depends_on` with `condition: service_healthy` for both dependencies
 - [ ] `.env.example` contains every environment variable referenced in the compose files
 - [ ] `.dockerignore` exists and excludes `node_modules`, `dist`, `.git`
-- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new packages or interfaces were introduced
-- [ ] Update `agent-development/agent-specs/FOLDER-STRUCTURE.md` if new packages or top-level directories were introduced
+- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new packages, interfaces, directories, or significant files were introduced
 - [ ] Update `README.md` with Docker setup instructions

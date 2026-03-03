@@ -22,7 +22,7 @@ Create the Docker infrastructure (Dockerfile, docker-compose.yml), environment c
 |---|---|
 | `src/config/configuration.ts` | Reference for which environment variables the app expects |
 | `package.json` | Reference for scripts the Makefile should wrap |
-| `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Confirms expected location of Docker files |
+| `agent-development/agent-specs/architecture-breakdown.md` | Confirms expected location of Docker files and project layout |
 
 ### Allowed Write Access
 

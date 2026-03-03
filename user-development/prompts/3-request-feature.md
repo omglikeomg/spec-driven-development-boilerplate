@@ -12,7 +12,7 @@ Familiarize yourself with the project context by reading the spec documents and 
    - `agent-development/agent-specs/architecture-breakdown.md`
    - `agent-development/agent-specs/git-workflow.md`
 
-2. **Read the relevant source code** to understand the current state of the system. Use `agent-development/agent-specs/FOLDER-STRUCTURE.md` for quick orientation on the project layout if needed. The source code is the source of truth.
+2. **Read the relevant source code** to understand the current state of the system. Use `agent-development/agent-specs/architecture-breakdown.md` for quick orientation on the project layout if needed. The source code is the source of truth.
 
 Then, review the existing task requests to understand the current scope and numbering:
 

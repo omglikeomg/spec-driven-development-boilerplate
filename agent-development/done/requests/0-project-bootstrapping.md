@@ -12,7 +12,7 @@ This is the very first task. Before we write any application logic, we need a co
 
 - Initialize a new NestJS project using the Nest CLI (`nest new`) or manual scaffolding with `yarn`.
 - Configure TypeScript in strict mode (`tsconfig.json` with `"strict": true`).
-- Create the full directory structure outlined in `agent-development/agent-specs/FOLDER-STRUCTURE.md`.
+- Create the full directory structure outlined in `agent-development/agent-specs/architecture-breakdown.md`.
 - Create placeholder files (empty modules, controllers, services) in each feature directory so that the project compiles without errors.
 - Set up the `.env.example` file with all required environment variables (database URL, Redis URL, app port, etc.) using safe placeholder values.
 - Create a `Makefile` with at minimum: `up`, `down`, `build`, `test`, `lint` targets.
@@ -46,7 +46,7 @@ This is the very first task. Before we write any application logic, we need a co
 
 - [ ] `package.json` with NestJS core dependencies, TypeScript, Jest, and dev tooling
 - [ ] `tsconfig.json` with strict mode enabled
-- [ ] All source directories and placeholder files as defined in `FOLDER-STRUCTURE.md`
+- [ ] All source directories and placeholder files as defined in `architecture-breakdown.md`
 - [ ] `.env.example` with documented placeholder values
 - [ ] `Makefile` with `up`, `down`, `build`, `test`, `lint` targets
 - [ ] `Dockerfile` and `docker-compose.yml`
@@ -59,8 +59,7 @@ This is the very first task. Before we write any application logic, we need a co
 - [ ] `yarn build` compiles the project with zero TypeScript errors
 - [ ] `yarn test` runs (even if no meaningful tests exist yet, the test runner should execute successfully)
 - [ ] `docker compose config` validates the compose file without errors
-- [ ] All directories listed in `FOLDER-STRUCTURE.md` exist
+- [ ] All directories listed in `architecture-breakdown.md` exist
 - [ ] `.env.example` contains all variables referenced in `src/config/configuration.ts`
-- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new packages or interfaces were introduced
-- [ ] Update `agent-development/agent-specs/FOLDER-STRUCTURE.md` if new packages or top-level directories were introduced
+- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new packages, interfaces, directories, or significant files were introduced
 - [ ] Update `README.md` with latest considerations

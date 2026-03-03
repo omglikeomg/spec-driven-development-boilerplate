@@ -70,8 +70,8 @@ agent-development/                  ← Agent-only pipeline (requests, plans, ex
 ├── agent-specs/                    ← Project-level specifications (read-only context)
 │   ├── agent-instructions.md       ← Coding standards and dos/don'ts
 │   ├── application-overview.md     ← What the app does
-│   ├── architecture-breakdown.md   ← Folder structure, design patterns, tech stack
-│   └── FOLDER-STRUCTURE.md         ← Quick-reference project directory tree & module deps
+│   ├── architecture-breakdown.md   ← Folder structure, patterns, tech stack, module deps
+│   └── git-workflow.md             ← Branching, commit conventions, versioning
 ├── pending/                        ← Task requests waiting to be planned
 │   └── _TEMPLATE-request.md        ← Template for new requests
 ├── plans/                          ← Implementation plans waiting for approval
@@ -121,7 +121,7 @@ Every piece of work flows through five stages. Agents read source code directly 
 **What happens:**
 - The agent reads all `agent-development/agent-specs/` documents for context.
 - The agent reads the specific task request from `agent-development/pending/`.
-- The agent reads the relevant source code to understand the current state of the project (the code is the source of truth). `agent-development/agent-specs/FOLDER-STRUCTURE.md` can be used for quick orientation.
+- The agent reads the relevant source code to understand the current state of the project (the code is the source of truth). `agent-development/agent-specs/architecture-breakdown.md` can be used for quick orientation.
 - The agent produces a **plan folder** containing a `manifest.json`, `specification.md`, and one or more numbered stage files — following the templates in `agent-development/plans/_templates/`.
 - The agent surfaces any ambiguities or decisions it cannot make on its own in the **"Open Questions & Decisions"** section of `specification.md`.
 
@@ -455,14 +455,13 @@ The `agent-development/agent-specs/` directory contains documents that provide g
 | Document | Path | Purpose |
 |---|---|---|
 | Application Overview | `agent-development/agent-specs/application-overview.md` | What the application does, its core workflows, and UX goals |
-| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Folder structure, design patterns, technology stack |
+| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Directory tree, folder descriptions, design patterns, tech stack, module dependencies, conventions |
 | Agent Instructions | `agent-development/agent-specs/agent-instructions.md` | Coding standards, dos/don'ts, testing expectations |
-| Folder Structure | `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Complete project directory tree and module dependency graph |
 | Git Workflow | `agent-development/agent-specs/git-workflow.md` | Branching strategy, commit conventions, versioning expectations |
 
 These files are the **shared context** for the project. If a plan or request contradicts them, the specs take precedence (or the specs should be updated first).
 
-> **Important:** When you first adopt this boilerplate, you must replace the example content in the `agent-specs/` files with your actual project's details. The examples are there to show you the level of detail that works well — they are not meant to be used as-is. The `git-workflow.md` file is designed as a starting point with sensible defaults — tweak the ticket ID pattern, branch naming format, and versioning expectations to match your team's conventions.
+> **Important:** When you first adopt this boilerplate, you must replace the example content in the `agent-specs/` files with your actual project's details. The examples are there to show you the level of detail that works well — they are not meant to be used as-is. The `git-workflow.md` and `agent-instructions.md` files are designed as starting points with sensible defaults — tweak them to match your team's conventions.
 
 ---
 
@@ -489,7 +488,7 @@ After cloning, users must copy the template files to their runtime locations. Th
 
 ### Spec Updates
 
-If a task introduces new modules, interfaces, or changes the architecture, the executing agent must update `agent-development/agent-specs/architecture-breakdown.md`, `agent-development/agent-specs/FOLDER-STRUCTURE.md`, and/or `agent-development/agent-specs/agent-instructions.md` as part of the plan's mandatory penultimate stage. These updates ensure future agents have accurate context.
+If a task introduces new modules, interfaces, directories, or changes the architecture, the executing agent must update `agent-development/agent-specs/architecture-breakdown.md` and/or `agent-development/agent-specs/agent-instructions.md` as part of the plan's mandatory penultimate stage. These updates ensure future agents have accurate context.
 
 ### Documentation Updates
 

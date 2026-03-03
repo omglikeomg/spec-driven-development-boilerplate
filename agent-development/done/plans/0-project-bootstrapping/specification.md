@@ -15,9 +15,8 @@ Before starting, the implementing agent **must** read and internalize these file
 | Document | Path | Purpose |
 |---|---|---|
 | Application Overview | `agent-development/agent-specs/application-overview.md` | Understand what the tool does |
-| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Understand folder structure, design patterns, tech stack |
+| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Directory tree, folder descriptions, design patterns, tech stack, module dependencies |
 | Agent Instructions | `agent-development/agent-specs/agent-instructions.md` | Coding standards, dos/don'ts, workflow |
-| Folder Structure | `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Quick-reference project directory tree and module dependency graph |
 | Task Definition | `agent-development/pending/0-project-bootstrapping.md` | The task being implemented |
 
 ---
@@ -40,7 +39,7 @@ Before starting, the implementing agent **must** read and internalize these file
 
 Initialize the Node.js project with `yarn init`, install all core NestJS dependencies and dev tooling, and create `tsconfig.json` (strict mode), `tsconfig.build.json`, and `nest-cli.json`.
 
-**Reads:** `agent-development/agent-specs/architecture-breakdown.md`, `agent-development/agent-specs/FOLDER-STRUCTURE.md`
+**Reads:** `agent-development/agent-specs/architecture-breakdown.md`
 **Writes:** `package.json`, `yarn.lock`, `tsconfig.json`, `tsconfig.build.json`, `nest-cli.json`
 
 ---
@@ -50,9 +49,9 @@ Initialize the Node.js project with `yarn init`, install all core NestJS depende
 **Complexity:** large
 **Instruction file:** `2-directory-structure.md`
 
-Create the full directory hierarchy from `FOLDER-STRUCTURE.md` and populate every module with minimal placeholder files (module, controller, service, entity, DTO) that compile without errors. This includes `src/main.ts`, `src/app.module.ts`, all feature modules, the config module, the database module, common utilities, and the OpenLibrary client module.
+Create the full directory hierarchy from `architecture-breakdown.md` and populate every module with minimal placeholder files (module, controller, service, entity, DTO) that compile without errors. This includes `src/main.ts`, `src/app.module.ts`, all feature modules, the config module, the database module, common utilities, and the OpenLibrary client module.
 
-**Reads:** `agent-development/agent-specs/FOLDER-STRUCTURE.md`, `package.json`, `tsconfig.json`
+**Reads:** `agent-development/agent-specs/architecture-breakdown.md`, `package.json`, `tsconfig.json`
 **Writes:** `src/main.ts`, `src/app.module.ts`, `src/config/*`, `src/database/*`, `src/books/*`, `src/shelves/*`, `src/reading-sessions/*`, `src/recommendations/*`, `src/external/open-library/*`, `src/common/**/*`
 
 ---
@@ -74,10 +73,10 @@ Create the Dockerfile (multi-stage build), `docker-compose.yml` (app + MongoDB +
 **Complexity:** small
 **Instruction file:** `4-spec-updates.md`
 
-Update `agent-development/agent-specs/architecture-breakdown.md` to reflect the actual installed dependencies and module wiring. Update `agent-development/agent-specs/FOLDER-STRUCTURE.md` to match the directory tree that was actually created (in case any adjustments were made during Stage 2).
+Update `agent-development/agent-specs/architecture-breakdown.md` to reflect the actual installed dependencies, module wiring, and directory tree that was actually created (in case any adjustments were made during Stage 2).
 
 **Reads:** `package.json`, `src/app.module.ts`, current spec files
-**Writes:** `agent-development/agent-specs/architecture-breakdown.md`, `agent-development/agent-specs/FOLDER-STRUCTURE.md`
+**Writes:** `agent-development/agent-specs/architecture-breakdown.md`
 
 ---
 
@@ -168,7 +167,7 @@ Summary of every file created or modified across all stages of this plan:
 | 37 | `docker/docker-compose.yml` | Created | 3 | App + MongoDB + Redis services |
 | 38 | `test/jest-e2e.json` | Created | 3 | Jest e2e test configuration |
 | 39 | `agent-development/agent-specs/architecture-breakdown.md` | Modified | 4 | Synced with actual installed deps and module structure |
-| 40 | `agent-development/agent-specs/FOLDER-STRUCTURE.md` | Modified | 4 | Synced with actual directory tree |
+
 | 41 | `README.md` | Created | 5 | Project overview, setup, and usage |
 
 **Total files created: 39 | Total files modified: 2**
@@ -184,7 +183,7 @@ The implementing agent must verify each item after ALL stages are complete:
 - [ ] `yarn build` compiles with zero TypeScript errors
 - [ ] `yarn test` runs the Jest test runner without crashing (0 tests OK)
 - [ ] `docker compose -f docker/docker-compose.yml config` validates without errors
-- [ ] Every directory from `FOLDER-STRUCTURE.md` exists on disk
+- [ ] Every directory from `architecture-breakdown.md` exists on disk
 - [ ] `.env.example` contains all variables used in `src/config/configuration.ts`
 - [ ] `.gitignore` excludes `node_modules/`, `dist/`, `.env`
 - [ ] `Makefile` targets `up`, `down`, `build`, `test`, `lint` all resolve without syntax errors

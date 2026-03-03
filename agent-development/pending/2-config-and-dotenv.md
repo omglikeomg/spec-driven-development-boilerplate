@@ -102,6 +102,5 @@ This task creates the canonical configuration module that all other modules will
 - [ ] `.env.example` contains every variable referenced in `configuration.ts` and `config.validation.ts`
 - [ ] `.env` is in `.gitignore`; `.env.example` is NOT
 - [ ] No source file outside `src/config/` reads from `process.env` directly
-- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new packages or interfaces were introduced
-- [ ] Update `agent-development/agent-specs/FOLDER-STRUCTURE.md` if new packages or top-level directories were introduced
+- [ ] Update `agent-development/agent-specs/architecture-breakdown.md` if new packages, interfaces, directories, or significant files were introduced
 - [ ] Update `README.md` with configuration setup instructions
