@@ -14,7 +14,8 @@ Before starting, the implementing agent **must** read and internalize these file
 |---|---|---|
 | Application Overview | `agent-development/agent-specs/application-overview.md` | Understand what the tool does |
 | Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Folder structure, design patterns, tech stack, module dependencies |
-| Agent Instructions | `agent-development/agent-specs/agent-instructions.md` | Coding standards, dos/don'ts, workflow |
+| Agent Instructions | `agent-development/agent-specs/agent-instructions.md` | Coding standards, dos/don'ts, naming, testing, error handling |
+| Agent Workflow | `agent-development/agent-specs/agent-workflow.md` | Execution rules, blast radius, commit timing, spec/doc update rules |
 | Git Workflow | `agent-development/agent-specs/git-workflow.md` | Branching strategy, commit conventions, versioning expectations |
 | Task Definition | `agent-development/pending/<N>-<name>.md` | The task being implemented |
 <!-- Add any other relevant reference files (existing source files, previous plans, etc.) -->
@@ -43,9 +44,19 @@ Before starting, the implementing agent **must** read and internalize these file
   The manifest.json is the authoritative record of stage state, context files,
   output files, and verification commands. This section is for review and approval.
 
-  Not all plans need multiple stages. Small tasks can have a single implementation
-  stage. However, ALL plans must end with the two mandatory final stages:
-  spec updates and documentation updates.
+  SPEC & DOC UPDATES — How they are structured depends on plan size
+  (see agent-workflow.md for full rules):
+
+  SINGLE-STAGE PLANS (1 implementation stage):
+    Spec and doc updates are INLINE STEPS at the end of the single stage.
+    The stage's blast radius includes the spec/doc files. Everything —
+    implementation, spec updates, doc updates — is one stage, one commit.
+    Do NOT add separate spec/doc stages.
+
+  MULTI-STAGE PLANS (2+ implementation stages):
+    Spec and doc updates are SEPARATE FINAL STAGES (penultimate and last).
+    Each gets its own stage file, blast radius, verification, and commit.
+    If no changes are needed, the stage can be marked 'skipped' during execution.
 -->
 
 ### Stage 1: <Stage Name>
@@ -61,6 +72,18 @@ Before starting, the implementing agent **must** read and internalize these file
 
 ---
 
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- OPTION A: SINGLE-STAGE PLAN                                           -->
+<!--   If this plan has only 1 implementation stage, spec/doc updates are  -->
+<!--   inline steps at the end of Stage 1. No additional stages needed.    -->
+<!--   Delete the multi-stage sections below.                              -->
+<!--                                                                       -->
+<!-- OPTION B: MULTI-STAGE PLAN                                            -->
+<!--   If this plan has 2+ implementation stages, add them here, then add  -->
+<!--   the separate spec/doc update stages below. Delete the single-stage  -->
+<!--   comment above.                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+
 ### Stage 2: <Stage Name>
 
 **Complexity:** small | medium | large
@@ -73,11 +96,12 @@ Before starting, the implementing agent **must** read and internalize these file
 
 ---
 
-<!-- Repeat for as many stages as needed. -->
+<!-- Repeat for as many implementation stages as needed. -->
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- MANDATORY FINAL STAGES — every plan must end with these   -->
-<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SEPARATE FINAL STAGES — Multi-stage plans only.                       -->
+<!-- Delete these for single-stage plans.                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
 
 ### Stage N-1: Spec Updates
 
@@ -156,6 +180,7 @@ Summary of every file created or modified across all stages of this plan:
 |---|---|---|---|---|
 | 1 | `path/to/file` | Created / Modified | 1 | Brief description of what's in the file |
 <!-- Action should be "Created" for new files or "Modified" for changes to existing files. -->
+<!-- For single-stage plans, spec/doc files updated inline are listed as part of Stage 1. -->
 
 **Total files created: X | Total files modified: Y**
 
@@ -168,8 +193,8 @@ The implementing agent must verify each item after ALL stages are complete:
 - [ ] All stage `status` fields in `manifest.json` are `done` (or `skipped` with justification)
 - [ ] All verification commands from every stage pass
 - [ ] No unrelated files were modified or deleted
-- [ ] `agent-development/agent-specs/` files are up to date (Stage N-1)
-- [ ] `README.md` and relevant human docs are up to date (Stage N)
+- [ ] `agent-development/agent-specs/` files are up to date (via separate stage or inline steps)
+- [ ] `README.md` and relevant human docs are up to date (via separate stage or inline steps)
 
 ---
 
@@ -183,5 +208,6 @@ The implementing agent must verify each item after ALL stages are complete:
 1. The source code is the source of truth — read it directly.
 2. Execute stages in order. Do not start a stage until its predecessor is marked `done` in `manifest.json`.
 3. After completing each stage, update its `status` in `manifest.json` to `done` and set `current_stage` to the next stage number.
-4. Note 1
-5. Note 2
+4. Follow `agent-development/agent-specs/agent-workflow.md` for all execution rules (blast radius, commit timing, spec/doc update handling, post-completion file moves).
+5. Note 1
+6. Note 2

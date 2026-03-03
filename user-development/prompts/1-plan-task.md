@@ -7,6 +7,7 @@
 Familiarize yourself with the project context by reading all documents in `agent-development/agent-specs/`:
 
 - `agent-development/agent-specs/agent-instructions.md`
+- `agent-development/agent-specs/agent-workflow.md`
 - `agent-development/agent-specs/application-overview.md`
 - `agent-development/agent-specs/architecture-breakdown.md`
 - `agent-development/agent-specs/git-workflow.md`
@@ -21,6 +22,8 @@ Using the request and the context you gathered, create a **detailed implementati
 
 Each plan is a **folder** (not a single file) containing:
 
+**For multi-stage plans** (2+ implementation stages):
+
 ```
 agent-development/plans/N-short-name/
 ├── manifest.json        ← Authoritative record of task state, stages, and context
@@ -28,9 +31,20 @@ agent-development/plans/N-short-name/
 ├── 1-stage-name.md      ← Stage 1 instructions for the implementing agent
 ├── 2-stage-name.md      ← Stage 2 instructions
 ├── ...                  ← As many stages as needed
-├── N-1-spec-updates.md  ← MANDATORY penultimate stage: update agent-development/agent-specs/
-└── N-documentation-updates.md  ← MANDATORY final stage: update README.md and human-facing docs
+├── N-1-spec-updates.md  ← Separate penultimate stage: update agent-development/agent-specs/
+└── N-documentation-updates.md  ← Separate final stage: update README.md and human-facing docs
 ```
+
+**For single-stage plans** (1 implementation stage):
+
+```
+agent-development/plans/N-short-name/
+├── manifest.json        ← Authoritative record of task state, stages, and context
+├── specification.md     ← Human-readable plan overview (for review and approval)
+└── 1-stage-name.md      ← Single stage: implementation + inline spec/doc updates at the end
+```
+
+See `agent-development/agent-specs/agent-workflow.md` for the full rules on when spec/doc updates are separate stages vs. inline steps.
 
 ## Rules
 
@@ -43,8 +57,11 @@ agent-development/plans/N-short-name/
 4. **Be exhaustive** — another AI agent will read the stage files and implement them. It will have no context beyond the stage file, the manifest, and the `agent-development/agent-specs/` documents. Every file to create/modify, every function signature, every shell command must be spelled out.
 5. **Name the plan folder** using the pattern `N-short-name` where `N` matches the task number from the request filename (e.g., task `1-docker-infrastructure.md` → plan folder `1-docker-infrastructure/`).
 6. **Save the plan folder** in `agent-development/plans/`.
-7. **Break large plans into stages** — each stage should be a focused, independently verifiable unit of work. If a stage feels "large" in complexity, consider splitting it. Small tasks can have a single implementation stage. However, ALL plans must end with the two mandatory final stages: spec updates (penultimate) and documentation updates (last).
-8. **Populate the blast radius** in each stage file — explicitly list which files the implementing agent is allowed to read and write. This prevents agents from making unscoped changes.
+7. **Break large plans into stages** — each stage should be a focused, independently verifiable unit of work. If a stage feels "large" in complexity, consider splitting it. **Spec and doc updates** must always be included in every plan, but their form depends on plan size:
+   - **Multi-stage plans (2+ implementation stages):** Add spec updates and documentation updates as **separate final stages** (penultimate and last).
+   - **Single-stage plans (1 implementation stage):** Include spec and doc updates as **final steps within the single stage** — do not create separate stages for them. This keeps small plans lightweight (1 stage, 1 commit).
+   - In either case, if no spec or doc updates are needed, state that explicitly (mark stages `skipped` or note "no changes needed" in the inline steps).
+8. **Populate the blast radius** in each stage file — explicitly list which files the implementing agent is allowed to read and write. This prevents agents from making unscoped changes. For single-stage plans with inline spec/doc updates, include the spec and doc files in the blast radius.
 9. **Do NOT implement any code.** This prompt is only for planning.
 
 ## Open Questions & Decisions (IMPORTANT)

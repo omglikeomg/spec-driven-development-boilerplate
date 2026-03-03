@@ -26,7 +26,7 @@ This document describes the development workflow used in this project. It follow
   - [manifest.json](#manifestjson)
   - [specification.md](#specificationmd)
   - [Stage Files](#stage-files)
-  - [Mandatory Final Stages](#mandatory-final-stages)
+  - [Spec & Doc Updates](#spec--doc-updates)
 - [File Lifecycle](#file-lifecycle)
 - [The Open Questions Mechanism](#the-open-questions-mechanism)
 - [Git Workflow & Commits](#git-workflow--commits)
@@ -61,6 +61,7 @@ The key principle is that **no code is written without an approved plan**, and *
 user-development/                   ← Human-facing development assets
 ├── DEVELOPMENT-GUIDE.md            ← You are here
 └── prompts/                        ← Reusable prompt templates for humans
+    ├── 0-bootstrap-specs.md        ← "Bootstrap agent-specs/ for a new project"
     ├── 1-plan-task.md
     ├── 2-execute-plan.md
     ├── 3-request-feature.md
@@ -68,7 +69,8 @@ user-development/                   ← Human-facing development assets
 
 agent-development/                  ← Agent-only pipeline (requests, plans, execution)
 ├── agent-specs/                    ← Project-level specifications (read-only context)
-│   ├── agent-instructions.md       ← Coding standards and dos/don'ts
+│   ├── agent-instructions.md       ← Coding standards, dos/don'ts, naming, testing, error handling
+│   ├── agent-workflow.md           ← Execution rules, blast radius, commit timing, spec/doc updates
 │   ├── application-overview.md     ← What the app does
 │   ├── architecture-breakdown.md   ← Folder structure, patterns, tech stack, module deps
 │   └── git-workflow.md             ← Branching, commit conventions, versioning
@@ -219,6 +221,8 @@ Plans are **folders**, not single files. This structure allows large tasks to be
 
 ### Plan Folder Layout
 
+**Multi-stage plans** (2+ implementation stages):
+
 ```
 N-short-name/
 ├── manifest.json                    ← Authoritative record of task state and stages
@@ -226,8 +230,17 @@ N-short-name/
 ├── 1-first-stage-name.md            ← Stage 1 instructions for the implementing agent
 ├── 2-second-stage-name.md           ← Stage 2 instructions
 ├── ...                              ← As many stages as needed
-├── N-1-spec-updates.md              ← MANDATORY penultimate stage
-└── N-documentation-updates.md       ← MANDATORY final stage
+├── N-1-spec-updates.md              ← Separate penultimate stage
+└── N-documentation-updates.md       ← Separate final stage
+```
+
+**Single-stage plans** (1 implementation stage):
+
+```
+N-short-name/
+├── manifest.json                    ← Authoritative record of task state and stages
+├── specification.md                 ← Human-readable overview (for review and approval)
+└── 1-stage-name.md                  ← Single stage: implementation + inline spec/doc updates
 ```
 
 ### manifest.json
@@ -273,17 +286,19 @@ Each stage file (`1-stage-name.md`, `2-stage-name.md`, etc.) is a self-contained
 - **Verification** — automated checks (commands) and manual verification items
 - **Rollback Plan** — how to undo this stage's changes if something goes wrong
 
-Not all plans need multiple stages. Small tasks can have a **single implementation stage** plus the two mandatory final stages. However, all plans must follow the same folder structure for consistency.
+Not all plans need multiple stages. Small tasks can have a **single implementation stage** with spec/doc updates included as inline steps at the end. All plans must follow the same folder structure (manifest + specification + stage files) for consistency.
 
-### Mandatory Final Stages
+### Spec & Doc Updates
 
-Every plan **must** end with these two stages (renumbered to fit the plan's stage count):
+Every plan must ensure that `agent-development/agent-specs/` files and human-facing documentation stay accurate after implementation. How this is structured depends on plan size:
 
-1. **Spec Updates (penultimate stage):** Update `agent-development/agent-specs/` files (architecture breakdown, folder structure, agent instructions) to reflect any changes introduced by the plan. If no spec changes are needed, the stage is marked `skipped` with a justification.
+**Multi-stage plans (2+ implementation stages):** Spec and doc updates are **separate final stages** — a penultimate stage for spec updates and a final stage for documentation updates. Each gets its own stage file, blast radius, verification, and commit. If no changes are needed for a given stage, it is marked `skipped` with a justification.
 
-2. **Documentation Updates (final stage):** Update human-facing documentation — `README.md`, `DEVELOPMENT-GUIDE.md`, and any other relevant docs — to reflect changes introduced by the plan. If no doc changes are needed, the stage is marked `skipped` with a justification.
+**Single-stage plans (1 implementation stage):** Spec and doc updates are **inline steps at the end of the single stage** — not separate stages. The stage's instruction file includes final steps to review and update spec files and documentation. The stage's blast radius includes the spec and doc files that may need updating. Everything — implementation, spec updates, doc updates — is verified and committed together as one stage, one commit.
 
-These two stages ensure that the project's context (for agents) and documentation (for humans) stay accurate after every change.
+In either case, if no spec or doc updates are needed, this must be explicitly stated (not silently omitted). The forcing function — "don't forget to check" — is always present regardless of plan size.
+
+See `agent-development/agent-specs/agent-workflow.md` for the full rules.
 
 ---
 
@@ -421,16 +436,17 @@ If your project uses automated versioning tools (e.g., `semantic-release`, `stan
 
 ## Prompt Templates
 
-Located in `user-development/prompts/`. These are copy-paste prompts the human uses to start agent conversations.
+Located in `user-development/prompts/`. These are copy-paste prompts the human uses to start agent conversations. The prompts are intentionally **lightweight** — they define the task-specific entry point and defer execution rules to the spec files in `agent-development/agent-specs/` (particularly `agent-workflow.md` and `git-workflow.md`). This avoids duplicating workflow logic in multiple places.
 
 | Prompt | File | Purpose |
 |---|---|---|
+| Bootstrap Specs | `user-development/prompts/0-bootstrap-specs.md` | Give to an agent to generate all `agent-specs/` files for a new project |
 | Plan a Task | `user-development/prompts/1-plan-task.md` | Give to an agent to produce a plan folder from a `pending/` request |
 | Execute a Plan | `user-development/prompts/2-execute-plan.md` | Give to an agent to implement an approved plan from `queued/` |
 | Request a Feature | `user-development/prompts/3-request-feature.md` | Give to an agent to write a new task request in `pending/` |
 | Quick Fix | `user-development/prompts/4-quick-fix.md` | Give to an agent to make a small, unambiguous change and log it |
 
-Each prompt has a `<PLACEHOLDER>` that you replace with a file reference before using it.
+Each prompt has a `<PLACEHOLDER>` that you replace with a file reference before using it. Prompt 0 is used once when adopting the boilerplate; prompts 1–4 are used throughout the project lifecycle.
 
 ---
 
@@ -452,16 +468,17 @@ Agents are instructed to follow these templates exactly when creating new docume
 
 The `agent-development/agent-specs/` directory contains documents that provide global context to every agent conversation:
 
-| Document | Path | Purpose |
-|---|---|---|
-| Application Overview | `agent-development/agent-specs/application-overview.md` | What the application does, its core workflows, and UX goals |
-| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Directory tree, folder descriptions, design patterns, tech stack, module dependencies, conventions |
-| Agent Instructions | `agent-development/agent-specs/agent-instructions.md` | Coding standards, dos/don'ts, testing expectations |
-| Git Workflow | `agent-development/agent-specs/git-workflow.md` | Branching strategy, commit conventions, versioning expectations |
+| Document | Path | Purpose | How Often You Customize |
+|---|---|---|---|
+| Agent Instructions | `agent-development/agent-specs/agent-instructions.md` | Coding standards, dos/don'ts, naming, testing, error handling | **Frequently** — evolves with your project |
+| Agent Workflow | `agent-development/agent-specs/agent-workflow.md` | Execution rules, blast radius, commit timing, spec/doc update rules | **Rarely** — only if you change the SDD process itself |
+| Application Overview | `agent-development/agent-specs/application-overview.md` | What the application does, its core workflows, and UX goals | **Occasionally** — when scope or purpose shifts |
+| Architecture Breakdown | `agent-development/agent-specs/architecture-breakdown.md` | Directory tree, folder descriptions, design patterns, tech stack, module dependencies, conventions | **Per-task** — updated as part of spec updates |
+| Git Workflow | `agent-development/agent-specs/git-workflow.md` | Branching strategy, commit conventions, versioning expectations | **Once at setup** — then rarely |
 
 These files are the **shared context** for the project. If a plan or request contradicts them, the specs take precedence (or the specs should be updated first).
 
-> **Important:** When you first adopt this boilerplate, you must replace the example content in the `agent-specs/` files with your actual project's details. The examples are there to show you the level of detail that works well — they are not meant to be used as-is. The `git-workflow.md` and `agent-instructions.md` files are designed as starting points with sensible defaults — tweak them to match your team's conventions.
+> **Important:** When you first adopt this boilerplate, use `user-development/prompts/0-bootstrap-specs.md` to generate the `agent-specs/` files for your project. The existing files contain example content for a fictional NestJS project — they demonstrate the level of detail that works well, but they are not meant to be used as-is. The `agent-workflow.md` file is system-level and typically doesn't need customization. The `agent-instructions.md` and `git-workflow.md` files are starting points — tweak them to match your team's conventions over time.
 
 ---
 
@@ -488,11 +505,11 @@ After cloning, users must copy the template files to their runtime locations. Th
 
 ### Spec Updates
 
-If a task introduces new modules, interfaces, directories, or changes the architecture, the executing agent must update `agent-development/agent-specs/architecture-breakdown.md` and/or `agent-development/agent-specs/agent-instructions.md` as part of the plan's mandatory penultimate stage. These updates ensure future agents have accurate context.
+If a task introduces new modules, interfaces, directories, or changes the architecture, the executing agent must update `agent-development/agent-specs/architecture-breakdown.md` and/or `agent-development/agent-specs/agent-instructions.md`. For multi-stage plans, this happens in a separate penultimate stage. For single-stage plans, this happens as inline steps at the end of the stage. The `agent-workflow.md` file is only updated if the SDD workflow itself changes (rare). See `agent-development/agent-specs/agent-workflow.md` for the full rules.
 
 ### Documentation Updates
 
-If a task changes user-facing behavior, the executing agent must update `README.md` and any other relevant human-facing documentation as part of the plan's mandatory final stage. This ensures that the project's documentation stays in sync with the code.
+If a task changes user-facing behavior, the executing agent must update `README.md` and any other relevant human-facing documentation. For multi-stage plans, this happens in a separate final stage. For single-stage plans, this happens as inline steps at the end of the stage. See `agent-development/agent-specs/agent-workflow.md` for the full rules.
 
 ---
 

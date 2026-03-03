@@ -66,6 +66,44 @@
 
 ---
 
+<!--
+  ═══════════════════════════════════════════════════════════════════════════════
+  SINGLE-STAGE PLANS ONLY — Inline Spec & Doc Updates
+
+  If this is the only stage in the plan, add the following steps at the end
+  of the Instructions section (renumber to fit). These replace the separate
+  spec-updates and documentation-updates stages that multi-stage plans use.
+
+  Delete this comment block for multi-stage plans — those have separate stages.
+  ═══════════════════════════════════════════════════════════════════════════════
+-->
+
+### Step [N].X: Update spec files (if needed)
+
+**Action:** review and update (or confirm no changes needed)
+
+Review the following files and update them if this stage introduced any architectural, structural, or convention changes:
+
+- `agent-development/agent-specs/architecture-breakdown.md` — new directories, modules, dependency changes, tech stack updates
+- `agent-development/agent-specs/agent-instructions.md` — new coding standards or dos/don'ts discovered during implementation
+
+If no changes are needed, note "Reviewed — no spec updates required" and move on.
+
+---
+
+### Step [N].Y: Update documentation (if needed)
+
+**Action:** review and update (or confirm no changes needed)
+
+Review the following files and update them if this stage introduced any user-facing changes:
+
+- `README.md` — new features, configuration options, setup steps
+- Any other project-specific documentation
+
+If no changes are needed, note "Reviewed — no documentation updates required" and move on.
+
+---
+
 ## Verification
 
 ### Automated Checks

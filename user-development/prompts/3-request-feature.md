@@ -8,6 +8,7 @@ Familiarize yourself with the project context by reading the spec documents and 
 
 1. **Read all spec documents** in `agent-development/agent-specs/`:
    - `agent-development/agent-specs/agent-instructions.md`
+   - `agent-development/agent-specs/agent-workflow.md`
    - `agent-development/agent-specs/application-overview.md`
    - `agent-development/agent-specs/architecture-breakdown.md`
    - `agent-development/agent-specs/git-workflow.md`

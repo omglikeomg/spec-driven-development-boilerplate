@@ -41,20 +41,36 @@
     },
 
     {
-      "_comment_separator": "========== MANDATORY FINAL STAGES ==========",
-      "_comment": "Every plan MUST end with these two stages (renumber as needed). The content of each stage is plan-specific — the planning agent decides which spec files, docs, and README sections need updating based on what the plan changes."
+      "_comment_separator": "========== SPEC & DOC UPDATES ==========",
+      "_comment_option_b": [
+        "How spec/doc updates are structured depends on plan size. See agent-workflow.md for full rules.",
+        "",
+        "SINGLE-STAGE PLANS (1 implementation stage):",
+        "  Spec and doc updates are INLINE STEPS at the end of the single stage.",
+        "  The stage's blast radius must include the spec/doc files that may need updating.",
+        "  Do NOT add separate stages below — the single stage handles everything.",
+        "  Include spec/doc files in the stage's context_files and output_files.",
+        "",
+        "MULTI-STAGE PLANS (2+ implementation stages):",
+        "  Add spec and doc updates as SEPARATE FINAL STAGES using the entries below.",
+        "  Renumber stage_id and instruction_file to fit your plan's stage count.",
+        "  Each gets its own commit, blast radius, and verification.",
+        "  If no changes are needed for a given stage, mark it 'skipped' with a justification."
+      ]
     },
 
     {
+      "_comment": "MULTI-STAGE ONLY — Delete this entry for single-stage plans.",
       "stage_id": "__PENULTIMATE__",
       "name": "Spec Updates",
-      "description": "MANDATORY — Update agent-development/agent-specs/ files to reflect any architectural, structural, or convention changes introduced by this plan.",
+      "description": "Update agent-development/agent-specs/ files to reflect any architectural, structural, or convention changes introduced by this plan.",
       "instruction_file": "N-1-spec-updates.md",
       "status": "todo",
       "complexity": "small",
       "context_files": [
         "agent-development/agent-specs/architecture-breakdown.md",
         "agent-development/agent-specs/agent-instructions.md",
+        "agent-development/agent-specs/agent-workflow.md",
         "agent-development/agent-specs/git-workflow.md"
       ],
       "output_files": [],
@@ -63,9 +79,10 @@
     },
 
     {
+      "_comment": "MULTI-STAGE ONLY — Delete this entry for single-stage plans.",
       "stage_id": "__LAST__",
       "name": "Documentation Updates",
-      "description": "MANDATORY — Update human-facing documentation (README.md, DEVELOPMENT-GUIDE.md, and any other relevant docs) to reflect changes introduced by this plan.",
+      "description": "Update human-facing documentation (README.md, DEVELOPMENT-GUIDE.md, and any other relevant docs) to reflect changes introduced by this plan.",
       "instruction_file": "N-documentation-updates.md",
       "status": "todo",
       "complexity": "small",

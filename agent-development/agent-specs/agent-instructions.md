@@ -5,19 +5,29 @@
   ║  THIS IS A STARTING POINT — Tweak these instructions to fit your project   ║
   ╚══════════════════════════════════════════════════════════════════════════════╝
   
-  These instructions are loaded as context for every agent conversation. They
-  tell the agent how you want code written, what patterns to follow, and what
-  to avoid.
+  This file contains your project's CODING STANDARDS — how you want code
+  written, what patterns to follow, and what to avoid. It is loaded as context
+  for every agent conversation.
   
-  You WILL need to customize this file as your project evolves. Treat it as a
-  living document — update it whenever you establish a new convention or catch
-  an agent making a mistake you don't want repeated.
+  The WORKFLOW and EXECUTION RULES (how agents interact with plans, stages,
+  blast radius, commits, etc.) live in agent-workflow.md. That file is
+  system-level and typically doesn't need customization. This file is the one
+  you'll customize heavily as your project evolves.
+  
+  Treat this as a living document — update it whenever you establish a new
+  convention or catch an agent making a mistake you don't want repeated.
   
   Areas you'll almost certainly want to tweak:
   - The "Your Role" section (match it to your actual tech stack)
   - The "Dos and Don'ts" section (add project-specific rules as you discover them)
   - The "Error Handling" section (adapt to your error strategy)
   - The "Testing" section (match your test framework and coverage expectations)
+  
+  NOTE: The examples below use TypeScript/NestJS because that is our
+  organization's recommended backend stack (NestJS for backend, Next.js for
+  frontend). If your project uses a different framework or language, replace
+  the framework-specific sections entirely — but keep the same heading
+  structure so agents know where to look.
 -->
 
 ## Your Role
@@ -29,6 +39,7 @@ You are an expert TypeScript developer specializing in backend services built wi
   - "You are an expert React developer specializing in Next.js applications."
   - "You are an expert TypeScript developer building CLI tools with Commander.js."
   - "You are a full-stack developer working with NestJS and React."
+  - "You are an expert Go developer building microservices with the standard library."
 -->
 
 ## Dos and Don'ts
@@ -128,29 +139,6 @@ You are an expert TypeScript developer specializing in backend services built wi
 - **Variables & functions:** `camelCase`. Constants: `UPPER_SNAKE_CASE`.
 - **Directories:** `kebab-case`. Feature modules get their own top-level directory under `src/`.
 
-## Workflow
-
-These steps apply to every task, regardless of size:
-
-1. **Verify your branch** — run `git branch --show-current` to confirm you are on a feature branch (not `main`). Extract the ticket ID from the branch name if present. See `agent-development/agent-specs/git-workflow.md` for branch naming conventions and ticket ID detection.
-2. Read the provided plan folder — start with `manifest.json` for task state and stage overview, then `specification.md` for the full context and resolved open questions.
-3. For each stage, read the stage's instruction file (e.g., `1-stage-name.md`) and the source code files listed in its "Allowed Read Access" section. Use `agent-development/agent-specs/architecture-breakdown.md` for quick orientation if needed.
-4. Implement the logic, respecting the stage's blast radius — only modify files listed in "Allowed Write Access."
-5. Run the verification commands listed in the stage's "Verification" section.
-6. After each stage passes, update `manifest.json`: set the stage's `status` to `done` and increment `current_stage`.
-7. **Commit the stage** — commit all changes from this stage (including the `manifest.json` update) using a conventional commit message. See `agent-development/agent-specs/git-workflow.md` for the commit message format.
-8. Every plan ends with two mandatory stages: **spec updates** (update `agent-development/agent-specs/` files) and **documentation updates** (update `README.md` and human-facing docs). Do not skip these unless the stage instructions explicitly say no changes are needed (in which case mark the stage `skipped`).
-9. After all stages are complete and archive file moves are done, make a **separate commit** for the archive moves: `chore: <ticket-id> archive completed plan and request`.
-
-## Source Code Is the Source of Truth
-
-The TypeScript source files are the canonical reference for how the system works. When working on a task:
-
-1. **Read the source code directly** for the modules and files relevant to your current stage. The code should be well-structured and self-documenting.
-2. **Use `agent-development/agent-specs/architecture-breakdown.md`** for quick orientation on project layout if you're unfamiliar with the directory structure.
-3. **Respect the blast radius** — each stage file explicitly lists which files you may read and write. If you discover a dependency on an unlisted file, stop and update the manifest and stage file before proceeding.
-4. **Spec and doc updates are handled in mandatory final stages** — do not update spec files or documentation mid-plan unless a stage's instructions explicitly say to.
-
 ## Docker & Local Development
 
 <!-- 
@@ -163,3 +151,13 @@ The TypeScript source files are the canonical reference for how the system works
 - Use the `Makefile` for common operations — prefer `make up`, `make down`, `make test` over raw Docker/yarn commands.
 - Environment-specific values go in `.env` files. Never hardcode ports, URLs, or credentials in source code.
 - The `.env.example` file is the git-tracked template. After cloning, users must `cp .env.example .env` and fill in their values.
+
+## Relationship to Other Spec Files
+
+| File | What It Covers |
+|---|---|
+| `agent-instructions.md` (this file) | Coding standards, dos/don'ts, naming, testing, error handling — **customize this** |
+| `agent-workflow.md` | Execution rules, blast radius, commit timing, spec/doc updates — system-level, rarely customized |
+| `architecture-breakdown.md` | Directory tree, module dependencies, design patterns, tech stack |
+| `application-overview.md` | What the app does, core workflows, UX goals |
+| `git-workflow.md` | Branching, commit format, ticket ID pattern, versioning |
