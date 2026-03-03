@@ -1,0 +1,165 @@
+{
+  "plan_metadata": {
+    "task_id": "0",
+    "task_name": "project-bootstrapping",
+    "status": "done",
+    "total_stages": 5,
+    "current_stage": 5,
+    "created": "2025-01-15",
+    "last_updated": "2025-01-15"
+  },
+
+  "dependencies": {
+    "required_tasks": [],
+    "packages": [
+      "@nestjs/common",
+      "@nestjs/core",
+      "@nestjs/platform-express",
+      "@nestjs/config",
+      "@nestjs/mongoose",
+      "@nestjs/bullmq",
+      "@nestjs/axios",
+      "mongoose",
+      "bullmq",
+      "class-validator",
+      "class-transformer",
+      "axios",
+      "joi",
+      "reflect-metadata",
+      "rxjs"
+    ],
+    "affected_modules": [
+      "src/config",
+      "src/database",
+      "src/books",
+      "src/shelves",
+      "src/reading-sessions",
+      "src/recommendations",
+      "src/external/open-library",
+      "src/common"
+    ]
+  },
+
+  "stages": [
+    {
+      "stage_id": 1,
+      "name": "Project Initialization & TypeScript Config",
+      "description": "Initialize the Node.js project, install all dependencies, and create TypeScript configuration files so the project has a compilable foundation.",
+      "instruction_file": "1-project-initialization.md",
+      "status": "done",
+      "complexity": "medium",
+      "context_files": [
+        "agent-development/agent-specs/architecture-breakdown.md",
+        "agent-development/agent-specs/FOLDER-STRUCTURE.md"
+      ],
+      "output_files": [
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.build.json",
+        "nest-cli.json"
+      ],
+      "verification_commands": ["yarn install", "npx tsc --version"],
+      "rollback_plan": "Delete package.json, yarn.lock, node_modules/, tsconfig.json, tsconfig.build.json, nest-cli.json."
+    },
+    {
+      "stage_id": 2,
+      "name": "Directory Structure & Source Placeholders",
+      "description": "Create the full directory hierarchy and populate every module with minimal placeholder files (module, controller, service, entity, DTO) that compile without errors.",
+      "instruction_file": "2-directory-structure.md",
+      "status": "done",
+      "complexity": "large",
+      "context_files": [
+        "agent-development/agent-specs/FOLDER-STRUCTURE.md",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "output_files": [
+        "src/main.ts",
+        "src/app.module.ts",
+        "src/config/configuration.ts",
+        "src/config/config.module.ts",
+        "src/database/database.module.ts",
+        "src/books/books.module.ts",
+        "src/books/books.controller.ts",
+        "src/books/books.service.ts",
+        "src/books/entities/book.entity.ts",
+        "src/shelves/shelves.module.ts",
+        "src/shelves/shelves.controller.ts",
+        "src/shelves/shelves.service.ts",
+        "src/shelves/entities/shelf.entity.ts",
+        "src/reading-sessions/reading-sessions.module.ts",
+        "src/reading-sessions/reading-sessions.controller.ts",
+        "src/reading-sessions/reading-sessions.service.ts",
+        "src/reading-sessions/entities/reading-session.entity.ts",
+        "src/recommendations/recommendations.module.ts",
+        "src/recommendations/recommendations.controller.ts",
+        "src/recommendations/recommendations.service.ts",
+        "src/recommendations/recommendations.processor.ts",
+        "src/external/open-library/open-library.module.ts",
+        "src/external/open-library/open-library.service.ts",
+        "src/common/filters/http-exception.filter.ts",
+        "src/common/interceptors/logging.interceptor.ts",
+        "src/common/interceptors/transform.interceptor.ts",
+        "src/common/decorators/user-id.decorator.ts",
+        "src/common/interfaces/paginated-response.interface.ts"
+      ],
+      "verification_commands": ["yarn build"],
+      "rollback_plan": "Delete the entire src/ directory. The project reverts to a compilable-but-empty state from Stage 1."
+    },
+    {
+      "stage_id": 3,
+      "name": "Docker, Environment & Makefile",
+      "description": "Create the Dockerfile, docker-compose.yml, .env.example, .gitignore, Makefile, and Jest e2e config so the project can be built, containerized, and operated via make targets.",
+      "instruction_file": "3-docker-env-makefile.md",
+      "status": "done",
+      "complexity": "medium",
+      "context_files": ["src/config/configuration.ts", "package.json"],
+      "output_files": [
+        ".env.example",
+        ".gitignore",
+        "Makefile",
+        "docker/Dockerfile",
+        "docker/docker-compose.yml",
+        "test/jest-e2e.json"
+      ],
+      "verification_commands": [
+        "make help",
+        "docker compose -f docker/docker-compose.yml config"
+      ],
+      "rollback_plan": "Delete .env.example, .gitignore, Makefile, docker/, test/jest-e2e.json."
+    },
+    {
+      "stage_id": 4,
+      "name": "Spec Updates",
+      "description": "Update agent-development/agent-specs/ files to reflect the bootstrapped project structure, installed dependencies, and established conventions.",
+      "instruction_file": "4-spec-updates.md",
+      "status": "done",
+      "complexity": "small",
+      "context_files": [
+        "agent-development/agent-specs/architecture-breakdown.md",
+        "agent-development/agent-specs/FOLDER-STRUCTURE.md",
+        "agent-development/agent-specs/agent-instructions.md",
+        "package.json",
+        "src/app.module.ts"
+      ],
+      "output_files": [
+        "agent-development/agent-specs/architecture-breakdown.md",
+        "agent-development/agent-specs/FOLDER-STRUCTURE.md"
+      ],
+      "verification_commands": [],
+      "rollback_plan": "Revert spec files to their pre-plan state via git checkout."
+    },
+    {
+      "stage_id": 5,
+      "name": "Documentation Updates",
+      "description": "Update README.md with project overview, setup instructions, prerequisites, and Makefile reference.",
+      "instruction_file": "5-documentation-updates.md",
+      "status": "done",
+      "complexity": "small",
+      "context_files": ["README.md", "Makefile", ".env.example"],
+      "output_files": ["README.md"],
+      "verification_commands": [],
+      "rollback_plan": "Revert README.md to its pre-plan state via git checkout."
+    }
+  ]
+}

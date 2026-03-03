@@ -1,0 +1,79 @@
+{
+  "plan_metadata": {
+    "task_id": "<N>",
+    "task_name": "<short-descriptive-name>",
+    "status": "draft",
+    "total_stages": 0,
+    "current_stage": 0,
+    "created": "YYYY-MM-DD",
+    "last_updated": "YYYY-MM-DD",
+
+    "_status_values": "draft | pending-approval | queued | in-progress | done | failed",
+    "_comment": "task_id and task_name must match the originating request file: N-short-descriptive-name.md"
+  },
+
+  "dependencies": {
+    "required_tasks": [],
+    "packages": [],
+    "affected_modules": [],
+
+    "_comment": "required_tasks lists task IDs that must be 'done' before this plan can execute. packages lists any new dependencies to install. affected_modules lists project modules this plan touches."
+  },
+
+  "stages": [
+    {
+      "stage_id": 1,
+      "name": "Stage Name",
+      "description": "What this stage accomplishes and why it exists as a discrete unit of work.",
+      "instruction_file": "1-stage-name.md",
+      "status": "todo",
+      "complexity": "small",
+      "context_files": ["path/to/file-to-read-before-starting.ts"],
+      "output_files": ["path/to/file-to-create-or-modify.ts"],
+      "verification_commands": [
+        "yarn build",
+        "yarn test --filter relevant-pattern"
+      ],
+      "rollback_plan": "Specific steps to revert this stage if it fails.",
+
+      "_complexity_values": "small | medium | large — if 'large', consider splitting into smaller stages",
+      "_status_values": "todo | in-progress | done | skipped | failed"
+    },
+
+    {
+      "_comment_separator": "========== MANDATORY FINAL STAGES ==========",
+      "_comment": "Every plan MUST end with these two stages (renumber as needed). The content of each stage is plan-specific — the planning agent decides which spec files, docs, and README sections need updating based on what the plan changes."
+    },
+
+    {
+      "stage_id": "__PENULTIMATE__",
+      "name": "Spec Updates",
+      "description": "MANDATORY — Update agent-development/agent-specs/ files to reflect any architectural, structural, or convention changes introduced by this plan.",
+      "instruction_file": "N-1-spec-updates.md",
+      "status": "todo",
+      "complexity": "small",
+      "context_files": [
+        "agent-development/agent-specs/architecture-breakdown.md",
+        "agent-development/agent-specs/FOLDER-STRUCTURE.md",
+        "agent-development/agent-specs/agent-instructions.md",
+        "agent-development/agent-specs/git-workflow.md"
+      ],
+      "output_files": [],
+      "verification_commands": [],
+      "rollback_plan": "Revert spec files to their pre-plan state via git checkout."
+    },
+
+    {
+      "stage_id": "__LAST__",
+      "name": "Documentation Updates",
+      "description": "MANDATORY — Update human-facing documentation (README.md, DEVELOPMENT-GUIDE.md, and any other relevant docs) to reflect changes introduced by this plan.",
+      "instruction_file": "N-documentation-updates.md",
+      "status": "todo",
+      "complexity": "small",
+      "context_files": ["README.md"],
+      "output_files": [],
+      "verification_commands": [],
+      "rollback_plan": "Revert documentation files to their pre-plan state via git checkout."
+    }
+  ]
+}
