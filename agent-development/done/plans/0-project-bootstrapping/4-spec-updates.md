@@ -49,7 +49,7 @@ This is the mandatory penultimate stage. Every plan must include a spec update s
 
 ## Prerequisites
 
-- [ ] Stage 3 is marked `done` in `manifest.json`
+- [ ] Stage 3 is marked `done` in `manifest.yaml`
 - [ ] All source files, Docker files, and config files are in their final state
 
 ---
@@ -135,7 +135,7 @@ If this stage fails or must be reverted:
 1. Revert `agent-development/agent-specs/architecture-breakdown.md` via `git checkout`
 2. (No separate folder structure file to revert — directory tree is now part of `architecture-breakdown.md`)
 3. Revert `agent-development/agent-specs/agent-instructions.md` via `git checkout` (if modified)
-4. Set this stage's `status` to `failed` in `manifest.json`
+4. Set this stage's `status` to `failed` in `manifest.yaml`
 
 ---
 

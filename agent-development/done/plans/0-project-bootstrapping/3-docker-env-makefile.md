@@ -46,7 +46,7 @@ Create the Docker infrastructure (Dockerfile, docker-compose.yml), environment c
 
 ## Prerequisites
 
-- [ ] Stage 2 is marked `done` in `manifest.json`
+- [ ] Stage 2 is marked `done` in `manifest.yaml`
 - [ ] Docker and Docker Compose are installed and the Docker daemon is running
 
 ---
@@ -204,7 +204,7 @@ If this stage fails or must be reverted:
 
 1. Delete `.env.example`, `.gitignore`, `Makefile`, `test/jest-e2e.json`
 2. Delete the `docker/` directory
-3. Set this stage's `status` to `failed` in `manifest.json`
+3. Set this stage's `status` to `failed` in `manifest.yaml`
 
 ---
 

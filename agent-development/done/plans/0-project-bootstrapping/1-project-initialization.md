@@ -210,7 +210,7 @@ If this stage fails or must be reverted:
 
 1. Delete `package.json`, `yarn.lock`, `tsconfig.json`, `tsconfig.build.json`, `nest-cli.json`
 2. Delete the `node_modules/` directory
-3. Set this stage's `status` to `failed` in `manifest.json`
+3. Set this stage's `status` to `failed` in `manifest.yaml`
 
 ---
 

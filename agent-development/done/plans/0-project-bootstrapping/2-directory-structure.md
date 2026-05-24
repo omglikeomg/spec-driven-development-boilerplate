@@ -41,7 +41,7 @@ Create the full directory hierarchy defined in `architecture-breakdown.md` and p
 
 ## Prerequisites
 
-- [ ] Stage 1 is marked `done` in `manifest.json`
+- [ ] Stage 1 is marked `done` in `manifest.yaml`
 - [ ] `yarn build` is available (i.e., `@nestjs/cli` is installed)
 
 ---
@@ -316,7 +316,7 @@ If this stage fails or must be reverted:
 
 1. Delete the entire `src/` directory
 2. The project reverts to a compilable-but-empty state from Stage 1
-3. Set this stage's `status` to `failed` in `manifest.json`
+3. Set this stage's `status` to `failed` in `manifest.yaml`
 
 ---
 

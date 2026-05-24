@@ -178,7 +178,7 @@ Summary of every file created or modified across all stages of this plan:
 
 The implementing agent must verify each item after ALL stages are complete:
 
-- [ ] All stage `status` fields in `manifest.json` are `done`
+- [ ] All stage `status` fields in `manifest.yaml` are `done`
 - [ ] `yarn install` succeeds with zero errors
 - [ ] `yarn build` compiles with zero TypeScript errors
 - [ ] `yarn test` runs the Jest test runner without crashing (0 tests OK)
@@ -196,8 +196,8 @@ The implementing agent must verify each item after ALL stages are complete:
 ## Notes for the Implementing Agent
 
 1. The source code is the source of truth — read it directly.
-2. Execute stages in order. Do not start a stage until its predecessor is marked `done` in `manifest.json`.
-3. After completing each stage, update its `status` in `manifest.json` to `done` and set `current_stage` to the next stage number.
+2. Execute stages in order. Do not start a stage until its predecessor is marked `done` in `manifest.yaml`.
+3. After completing each stage, update its `status` in `manifest.yaml` to `done` and set `current_stage` to the next stage number.
 4. All placeholder files should contain valid TypeScript that compiles. Empty classes with the correct decorators are fine — do not add business logic yet.
 5. Do NOT install any dependencies beyond what this plan specifies. Future tasks will add dependencies as needed.
 6. The database connection in `database.module.ts` uses a simple URI from config. Migrations will be managed separately in a later task.

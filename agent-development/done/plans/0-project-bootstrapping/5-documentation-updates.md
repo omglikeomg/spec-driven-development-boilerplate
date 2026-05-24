@@ -50,7 +50,7 @@ This is the mandatory final stage. Every plan must include a documentation updat
 
 ## Prerequisites
 
-- [ ] Stage 4 is marked `done` in `manifest.json`
+- [ ] Stage 4 is marked `done` in `manifest.yaml`
 - [ ] All source files, Docker files, config files, and spec files are in their final state
 
 ---
@@ -155,7 +155,7 @@ If this stage fails or must be reverted:
 
 1. Revert `README.md` via `git checkout`
 2. Revert `user-development/DEVELOPMENT-GUIDE.md` via `git checkout` (if modified)
-3. Set this stage's `status` to `failed` in `manifest.json`
+3. Set this stage's `status` to `failed` in `manifest.yaml`
 
 ---
 
@@ -164,4 +164,4 @@ If this stage fails or must be reverted:
 - The README is the single most-read file in any repository. Invest in making it scannable and accurate. A developer should be able to go from "I just cloned this" to "the app is running" by following the Quick Start section alone, without reading anything else.
 - The README should not duplicate the full DEVELOPMENT-GUIDE.md content. It should link to it. The README is for "how do I run this?"; the guide is for "how do I contribute using the SDD workflow?".
 - If the bootstrapping plan resolved open questions (e.g., Q1 about Yarn Classic, Q2 about Docker directory), the README should reflect those decisions naturally (e.g., "Install Yarn v1" not "Install Yarn v1 or v4"). Don't mention the open questions in the README — just apply the resolved decisions.
-- This is the last stage. After completing it, update all stage statuses to `done` in `manifest.json`, set `current_stage` to the total number of stages, and set `plan_metadata.status` to `done`.
+- This is the last stage. After completing it, update all stage statuses to `done` in `manifest.yaml`, set `current_stage` to the total number of stages, and set `plan_metadata.status` to `done`.
