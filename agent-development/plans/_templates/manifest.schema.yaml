@@ -1,0 +1,156 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Plan Manifest — YAML Schema Reference
+# ─────────────────────────────────────────────────────────────────────────────
+# This file documents the expected structure of manifest.yaml.
+# It is NOT a JSON Schema — it's a human-readable reference showing:
+#   - Every valid field and its type
+#   - Allowed values (enums)
+#   - Which fields are required vs optional
+#
+# Use this to validate manifests manually or to build tooling.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_schema_version: "1.0"
+
+plan_metadata:
+  _required: true
+  task_id:
+    type: integer
+    required: true
+    description: "Must match originating request number"
+  task_name:
+    type: string
+    required: true
+    description: "Must match request filename (kebab-case)"
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+  status:
+    type: enum
+    required: true
+    values: [draft, pending-approval, approved, in-progress, done, failed, paused]
+  complexity:
+    type: enum
+    required: true
+    values: [1, 2, 3, 5, 8, 13]
+    description: "Fibonacci scale — inherited from request"
+  total_stages:
+    type: integer
+    required: true
+    minimum: 1
+  current_stage:
+    type: integer
+    required: true
+    minimum: 0
+  created:
+    type: date
+    required: true
+    format: "YYYY-MM-DD"
+  last_updated:
+    type: date
+    required: true
+    format: "YYYY-MM-DD"
+
+  approval:
+    _required: true
+    status:
+      type: enum
+      required: true
+      values: [pending, approved, changes-requested]
+    approved_by:
+      type: string
+      required: false
+      description: "Name of the approver (filled when approved)"
+    approved_at:
+      type: date
+      required: false
+      format: "YYYY-MM-DD"
+    notes:
+      type: string
+      required: false
+      description: "Human notes on approval or change requests"
+
+dependencies:
+  _required: true
+  required_tasks:
+    type: array
+    items: integer
+    description: "Task IDs that must be done before execution"
+  packages:
+    type: array
+    items: string
+    description: "New dependencies to install"
+  affected_modules:
+    type: array
+    items: string
+    description: "Project modules this plan touches"
+
+stages:
+  _required: true
+  type: array
+  min_items: 1
+  items:
+    stage_id:
+      type: integer
+      required: true
+    name:
+      type: string
+      required: true
+    description:
+      type: string
+      required: true
+    instruction_file:
+      type: string
+      required: true
+      pattern: "^\\d+-[a-z0-9-]+\\.md$"
+    status:
+      type: enum
+      required: true
+      values: [todo, in-progress, done, skipped, failed]
+    complexity:
+      type: enum
+      required: true
+      values: [1, 2, 3, 5, 8]
+      description: "Fibonacci — stage-level (13 is too large for a stage)"
+    context_files:
+      type: array
+      items: string
+      required: true
+      description: "Files the agent must read before starting"
+    output_files:
+      type: array
+      items: string
+      required: true
+      description: "Files the agent will create or modify"
+    verification_commands:
+      type: array
+      items: string
+      required: true
+      description: "Commands to run after completion (can be empty)"
+    rollback_plan:
+      type: string
+      required: true
+      description: "Steps to undo this stage if it fails"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Valid Status Transitions
+# ─────────────────────────────────────────────────────────────────────────────
+_transitions:
+  plan_metadata.status:
+    draft: [pending-approval]
+    pending-approval: [approved, draft]
+    approved: [in-progress]
+    in-progress: [done, failed, paused]
+    paused: [in-progress, draft]
+    failed: [draft, paused]
+    done: []  # terminal
+
+  plan_metadata.approval.status:
+    pending: [approved, changes-requested]
+    changes-requested: [pending, approved]
+    approved: []  # terminal (unless plan is reset to draft)
+
+  stages[].status:
+    todo: [in-progress, skipped]
+    in-progress: [done, failed, skipped]
+    done: []      # terminal
+    skipped: []   # terminal
+    failed: []    # terminal

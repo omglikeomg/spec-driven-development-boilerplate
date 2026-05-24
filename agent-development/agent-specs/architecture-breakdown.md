@@ -108,6 +108,7 @@ my-project/
 │
 ├── user-development/
 │   ├── DEVELOPMENT-GUIDE.md                 ← Human-facing workflow guide
+│   ├── STATUS-REFERENCE.md                  ← All status enums and transitions
 │   └── prompts/
 │       ├── 0-bootstrap-specs.md
 │       ├── 1-plan-task.md

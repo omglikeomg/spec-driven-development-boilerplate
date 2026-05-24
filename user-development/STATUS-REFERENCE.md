@@ -73,9 +73,12 @@ Tasks are the atomic units of work within an epic. Status is tracked in the `tas
 | `done` | Completed and verified | Agent / Human | _(terminal)_ |
 | `skipped` | Will not be done (out of scope, superseded) | Human | _(terminal)_ |
 
+> **Shortcut:** Standalone requests created via Prompt 3 (interactive discovery) enter directly at `activated` status, skipping `draft` and `refined` — the interactive session itself serves as the refinement process.
+
 ```mermaid
 stateDiagram-v2
     [*] --> draft
+    [*] --> activated : standalone (Prompt 3)
     draft --> refined
     refined --> activated
     refined --> skipped

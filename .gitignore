@@ -1,0 +1,12 @@
+# SDD runtime files (not committed)
+.agent-audit-log
+.agent-notes-local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~

@@ -193,7 +193,7 @@ graph LR
 - The agent reads the specific task request from `pending/`.
 - The agent produces a **plan folder** in `agent-development/plans/` containing:
   - `manifest.yaml` (with `status: pending-approval`, `approval.status: pending`)
-  - `specification.md` (with matching frontmatter)
+  - `specification.md` (plan overview and open questions)
   - One or more numbered stage files
 
 **Output:** A plan folder in `agent-development/plans/` ready for review.
@@ -208,7 +208,6 @@ graph LR
 - You can modify any part of the plan if you disagree.
 - Once satisfied, you **update the approval fields**:
   - In `manifest.yaml`: set `plan_metadata.approval.status: approved`, fill `approved_by` and `approved_at`
-  - In `specification.md` frontmatter: set `approval.status: approved`, `open_questions_resolved: true`
   - Set `plan_metadata.status: approved`
 
 **The field update is the approval signal.** No folder move is needed.
@@ -324,7 +323,7 @@ approval:
 
 ### specification.md
 
-The **human-readable plan overview** with its own YAML frontmatter mirroring approval state. Contains: Overview, Reference Documents, Pre-Conditions, Stages summary, Open Questions, File Manifest, Post-Completion Checklist, and Notes.
+The **human-readable plan overview** with YAML frontmatter for quick-reference metadata (approval is tracked only in `manifest.yaml`). Contains: Overview, Reference Documents, Pre-Conditions, Stages summary, Open Questions, File Manifest, Post-Completion Checklist, and Notes.
 
 ### Stage Files
 

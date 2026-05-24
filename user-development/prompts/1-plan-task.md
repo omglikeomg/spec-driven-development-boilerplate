@@ -42,7 +42,7 @@ Produce a complete plan folder in `agent-development/plans/<N-task-name>/` conta
 
 ### 2. `specification.md`
 
-- Fill YAML frontmatter (plan_id, title, status: draft, approval.status: pending)
+- Fill YAML frontmatter (plan_id, title, status: draft)
 - Populate all body sections from the template
 - Write thorough Open Questions for anything you cannot decide autonomously
 - Include the File Manifest with all files across all stages

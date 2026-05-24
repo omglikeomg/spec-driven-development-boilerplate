@@ -4,12 +4,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
 plan_id: null                   # References manifest.yaml task_id
 title: ""
-status: draft                   # Mirrors manifest.yaml plan_metadata.status
-approval:
-  status: pending               # pending | approved | changes-requested
-  reviewer: null
-  reviewed_at: null             # YYYY-MM-DD
-  open_questions_resolved: false  # true when no PENDING markers remain in body
+status: draft                   # Mirrors manifest.yaml — for quick reference only
+# NOTE: Approval is tracked ONLY in manifest.yaml (plan_metadata.approval.status)
+# To approve this plan: set approval.status to "approved" in manifest.yaml
 ---
 
 # Implementation Plan: Task <N> — <Short Descriptive Title>
@@ -40,7 +37,7 @@ Before starting, the implementing agent **must** read and internalize these file
 
 <!-- List everything that must be true before this plan can be executed. -->
 
-- Plan approval status is `approved` (check frontmatter above and manifest.yaml)
+- Plan approval status is `approved` in `manifest.yaml` (see `plan_metadata.approval.status`)
 - Pre-condition 1
 - Pre-condition 2
 
