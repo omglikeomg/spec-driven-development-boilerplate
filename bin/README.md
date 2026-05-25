@@ -4,6 +4,23 @@ A portable CLI wrapper for all agent-facing operations in projects using the SDD
 
 > **Full adoption guide:** For the complete bootstrapping flow (including when to run `bootstrap.sh`, how to configure `commands.yaml` and `teams.yaml`, and how `bin/dev` fits into the broader SDD adoption sequence), see [ADOPTION.md](../ADOPTION.md).
 
+## Scope: Local vs Git-Native Mode
+
+`bin/dev` serves different roles depending on the workflow mode:
+
+| Mode | Who uses `bin/dev` | Purpose |
+|------|-------------------|----------|
+| **Local mode** | IDE-based agents + humans | Primary interface for ALL operations |
+| **Git-native mode** | Humans only (hub operator) | Setup, verification, and status monitoring |
+
+In git-native mode, **Copilot Cloud Agent does NOT use `bin/dev`**. Instead:
+- Its environment is configured by `copilot-setup-steps.yml`
+- It reads `.github/copilot-instructions.md` for build commands
+- It runs `pnpm test`, `pnpm lint`, etc. directly
+- GitHub Actions handles orchestration
+
+`bin/dev` remains the human's tool for managing the hub, setting up repos, and checking pipeline status.
+
 ## Quick Start
 
 ```bash
@@ -68,7 +85,11 @@ sdd/bin/
 │   ├── review.sh           ← Structured PR review packet
 │   ├── note.sh
 │   ├── note-read.sh
-│   └── note-clear.sh
+│   ├── note-clear.sh
+│   ├── repo-setup-gitflow.sh ← Set up git-native SDD in a target repo
+│   ├── gitflow-labels.sh  ← Create required GitHub labels
+│   ├── gitflow-status.sh  ← Pipeline status via GitHub API
+│   └── gitflow-verify.sh  ← Verify git-native setup completeness
 └── hooks/                ← Git hook scripts
     ├── pre-commit        ← Validates SDD manifests
     └── commit-msg        ← Validates conventional commit format

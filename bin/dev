@@ -90,9 +90,15 @@ MULTIREPO (Hub Coordination):
   repo:add <name> <url>         Register new repo as submodule
   repo:enter <name>             Print context for working in a repo
   repo:migrate <name>           Move fallback-sdd/ into child repo
-  dispatch <epic-id> <task-id>  Dispatch task request to target repo
+  repo:setup-gitflow <name>     Set up git-native workflow in target repo
+  dispatch <epic-id> <task-id>  Dispatch task request to target repo (local mode)
   status [epic-id]              Cross-repo epic status dashboard
   resolve-spec <type> <repo>    Find spec file via cascade resolution
+
+GIT-NATIVE PIPELINE:
+  gitflow:status [repo]         Pipeline status (issues, PRs, runs)
+  gitflow:labels <repo|--hub>   Create required labels in GitHub
+  gitflow:verify <repo>         Verify git-native setup is complete
 
 WORKFLOW:
   wf:status                     Show status of epics, tasks, and plans
