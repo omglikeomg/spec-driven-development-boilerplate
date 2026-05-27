@@ -13,6 +13,10 @@ This document describes the development workflow used in this project. It follow
 - [Philosophy](#philosophy)
 - [Directory Layout](#directory-layout)
 - [The Epic Layer](#the-epic-layer)
+  - [Roles & Responsibilities (RACI)](#roles--responsibilities-raci)
+  - [Input Requirements Per Phase](#input-requirements-per-phase)
+  - [The Prompt Chain: Data Flow](#the-prompt-chain-data-flow)
+  - [Mid-Flight Amendments (Prompt 8)](#mid-flight-amendments-prompt-8)
 - [The Pipeline](#the-pipeline)
 - [The Quick Fix Track](#the-quick-fix-track)
 - [Plan Structure](#plan-structure)
@@ -53,7 +57,8 @@ See `user-development/STATUS-REFERENCE.md` for all status enums and valid transi
 ```
 sdd/
 ├── config/
-│   └── teams.yaml                      ← Team/project config (Jira, branching, conventions)
+│   ├── teams.yaml                      ← Team/project config (Jira, branching, conventions)
+│   └── jira-ticket-templates.md        ← Content templates for Jira tickets
 │
 ├── user-development/                   ← Human-facing development assets
 │   ├── DEVELOPMENT-GUIDE.md            ← You are here
@@ -67,7 +72,8 @@ sdd/
 │       ├── 4-quick-fix.md
 │       ├── 5-create-epic.md
 │       ├── 6-break-down-epic.md
-│       └── 7-refine-epic-request.md
+│       ├── 7-refine-epic-request.md
+│       └── 8-amend-epic.md
 │
 ├── epics/                              ← Strategic feature planning (Epic layer)
 │   ├── _templates/
@@ -78,7 +84,7 @@ sdd/
 │   │   └── N-epic-name/
 │   │       ├── epic.md
 │   │       ├── task-graph.md
-│   │       ├── delivery.yaml           ← Created at first task activation
+│   │       ├── delivery.yaml           ← Created during breakdown (Prompt 6)
 │   │       └── requests/
 │   └── done/                           ← Completed epics (archive)
 │
@@ -122,21 +128,20 @@ For single-task work, skip epics entirely — use Prompt 3 (Create Request) dire
 ```mermaid
 graph LR
     D[Define]:::accent0 --> B[Break Down]:::accent1
-    B --> C[Create Tickets]:::accent2
-    C --> R[Refine]:::accent3
-    R --> A[Activate]:::accent4
-    A --> E[Execute]:::accent5
-    E --> DN[Done]:::accent6
+    B --> R[Refine + Create Tickets]:::accent2
+    R --> A[Activate]:::accent3
+    A --> E[Execute]:::accent4
+    E --> DN[Done]:::accent5
 ```
 
 | Step | Who | Prompt | Output |
 |---|---|---|---|
-| **Define** | Human + Agent | Prompt 5 | `epic.md` (status: `discussing` → `decomposed`) |
-| **Break Down** | Agent | Prompt 6 | `task-graph.md` + request shells + `delivery.yaml` |
-| **Create Tickets** | Human (or Agent via MCP) | — | Jira tickets, IDs recorded in `task-graph.md` |
-| **Refine** | Human + Agent | Prompt 7 | Full request documents (status: `refined`) |
-| **Activate** | Human | — | Copy request to `pending/`, update status to `activated` |
+| **Define** | EM + Tech Lead + Agent | Prompt 5 | `epic.md` (status: `discussing` → `decomposed`) |
+| **Break Down** | Tech Lead + Agent | Prompt 6 | `task-graph.md` + request shells + `delivery.yaml` |
+| **Refine** | Tech Lead + Agent | Prompt 7 | Full request documents (status: `refined`) + Jira tickets |
+| **Activate** | Tech Lead | — | Copy request to `pending/`, update status to `activated` |
 | **Execute** | Agent | Prompts 1 → 2 | Code, PRs, plan completion |
+| **Amend** _(if needed)_ | Tech Lead + Agent | Prompt 8 | Updated graph, new/modified tasks, negotiation record |
 | **Done** | Auto | — | Epic archived to `done/` |
 
 ### Epic Directory Structure
@@ -149,15 +154,113 @@ epics/active/N-epic-name/
 └── requests/            ← Request files (shells → refined)
 ```
 
+### Roles & Responsibilities (RACI)
+
+| Phase | Product Manager | Engineering Manager | Tech Lead | Engineer / Agent |
+|-------|:-:|:-:|:-:|:-:|
+| Product brief creation | **R/A** | I | C | — |
+| Epic definition (Prompt 5) | C | **R/A** | **R** | — |
+| Task breakdown (Prompt 6) | — | I | **R/A** | — |
+| Task refinement (Prompt 7) | — | — | **R/A** | C |
+| Jira ticket creation | — | I | **R/A** | — |
+| Plan review & approval | — | A | **R** | — |
+| Execution (Prompts 1-2) | — | — | I | **R/A** |
+| Amendment (Prompt 8) | C | I | **R/A** | — |
+
+_R = Responsible, A = Accountable, C = Consulted, I = Informed_
+
+### Input Requirements Per Phase
+
+Each epic phase requires specific inputs to be effective. Missing inputs cause delays and rework.
+
+| Phase | Required Inputs | Optional Inputs | Who Provides |
+|-------|-----------------|-----------------|-------------|
+| **Define** (Prompt 5) | Product brief (PRD, Confluence doc, or detailed Slack summary) | Technical Design Document, Figma designs, competitor analysis | PM provides brief; Tech Lead provides TDD |
+| **Break Down** (Prompt 6) | Completed `epic.md` with status `decomposed` | Software Design Document with architectural approach | Tech Lead |
+| **Refine** (Prompt 7) | Request shell from Prompt 6, access to relevant source code | Predecessor task outputs (if dependencies exist) | Tech Lead + codebase |
+| **Amend** (Prompt 8) | Active epic path + description of what changed | Updated designs, revised PRD, policy document | PM/EM provides trigger; Tech Lead executes |
+
+#### What Constitutes a Valid Product Brief?
+
+The product brief provided to Prompt 5 can take many forms, but must contain:
+
+- **The problem** — what user or business pain point are we addressing?
+- **The desired outcome** — what does success look like?
+- **Scope signal** — any indication of what's in vs. out
+
+Acceptable formats:
+- A formal PRD (Confluence, Notion, Google Doc)
+- A detailed Slack thread or email summarizing the above
+- A Figma file with annotations explaining the feature
+- A Loom video walkthrough of the desired behavior
+- A bullet-point list covering problem + outcome + scope
+
+#### What Constitutes a Software Design Document?
+
+The Tech Lead should ideally provide (or create during Prompt 5) a document covering:
+
+- **High-level architecture** — which system layers are affected
+- **Data flow** — how data moves through the system for this feature
+- **API contracts** — new or modified endpoints/schemas
+- **Technical risks** — performance concerns, migration needs, breaking changes
+- **Pattern decisions** — which existing patterns to follow or deviate from
+
+This can be a standalone document linked in the epic's `references.other[]`, or it can emerge naturally during the Prompt 5 discovery session and be captured in the "Decisions Made During Discovery" section.
+
+### The Prompt Chain: Data Flow
+
+The epic prompts form a pipeline where each step's output feeds the next:
+
+```mermaid
+graph TD
+    Brief[Product Brief<br>from PM]:::accent0
+    TDD[Technical Design Doc<br>from Tech Lead]:::accent1
+    P5[Prompt 5: Define Epic<br>EM + Tech Lead]:::accent2
+    Epic[epic.md]:::accent3
+    P6[Prompt 6: Break Down<br>Tech Lead]:::accent4
+    Graph[task-graph.md<br>+ request shells<br>+ delivery.yaml]:::accent5
+    P7[Prompt 7: Refine<br>Tech Lead per task]:::accent6
+    Requests[Full requests<br>+ Jira tickets]:::accent7
+
+    Brief --> P5
+    TDD --> P5
+    P5 --> Epic
+    Epic --> P6
+    P6 --> Graph
+    Graph --> P7
+    P7 --> Requests
+```
+
+**Key insight:** Prompts 5 and 7 are **interactive** (the agent asks questions, you answer, it writes only when told). Prompt 6 is **one-shot** (agent reads the epic and produces all outputs). This means:
+
+- Prompt 5 sessions can take 20-60 minutes of back-and-forth
+- Prompt 6 runs in one pass — review its output afterward
+- Prompt 7 sessions are 10-30 minutes each, done per-task
+- You can refine tasks in any order (parallel refinement sessions are fine)
+
 ### Key Rules
 
-1. **No files are written during interactive discovery** — Prompts 5 and 7 explicitly forbid writing until the human declares refinement complete.
+1. **No files are written during interactive discovery** — Prompts 5, 7, and 8 explicitly forbid writing until the human declares refinement complete.
 2. **The epic stays self-contained** — request files live in the epic's `requests/` folder. When activated, they are *copied* to `agent-development/pending/`.
 3. **Product decisions live in the epic; implementation decisions live in requests** — don't put "how to code it" details in `epic.md`.
 4. **The task-graph frontmatter tracks status** — update task statuses as they progress through the workflow.
-5. **Jira tickets are created after the task-graph is finalized** — before any task is activated. If Atlassian MCP is available, the agent creates tickets automatically (reading `config/teams.yaml` for project defaults). Otherwise, create them manually.
-6. **`delivery.yaml` is created at first activation** — it tracks branches, PRs, merge status, and enforces merge order based on the dependency graph.
-7. **Negotiations are recorded** — when scope changes after the epic is confirmed, add entries to `task-graph.md` frontmatter `negotiations[]` and `delivery.yaml` `negotiation_impacts[]`.
+5. **Jira tickets are created after refinement** — during Prompt 7, after the task has full requirements and acceptance criteria. This ensures tickets are born with sufficient context (see `config/jira-ticket-templates.md`).
+6. **`delivery.yaml` is created during breakdown (Prompt 6)** — it tracks branches, PRs, merge status, and enforces merge order based on the dependency graph.
+7. **Amendments are first-class** — when scope changes after the epic is active, use Prompt 8 to formally amend. This records negotiations in `task-graph.md` and impacts in `delivery.yaml`.
+8. **Task IDs are immutable** — once assigned, an ID never changes. New tasks get the next sequential integer regardless of where they fit in the dependency graph.
+
+### Mid-Flight Amendments (Prompt 8)
+
+Epics rarely survive first contact with implementation unchanged. When scope needs to change after an epic is already active:
+
+1. **Trigger:** New product requirements, design revisions, engineering policy changes, or a task that proved too large.
+2. **Process:** Use Prompt 8 — an interactive session that assesses impact, proposes minimal changes, and applies them.
+3. **ID rules:** New tasks get the next sequential ID. Existing IDs never change. Position in the graph is determined by dependency edges, not ID number.
+4. **Status flow:** Epic → `renegotiating` → changes applied → `active`.
+5. **Audit trail:** Every amendment is recorded in `task-graph.md` `negotiations[]` and `delivery.yaml` `negotiation_impacts[]`.
+6. **Constraints:** Completed tasks (`done`) are never modified — if rework is needed, create a new task. In-progress tasks get only minor scope adjustments.
+
+See `user-development/prompts/8-amend-epic.md` for the full prompt.
 
 ---
 
@@ -467,9 +570,10 @@ Agents do **not** bump version numbers. The commit types signal expected impact:
 | 4 | `4-quick-fix.md` | One-shot | Small change that skips the full pipeline |
 | 5 | `5-create-epic.md` | Interactive | Product discovery session → produce `epic.md` |
 | 6 | `6-break-down-epic.md` | One-shot | Decompose epic into task-graph + delivery.yaml + request shells |
-| 7 | `7-refine-epic-request.md` | Interactive | Refine a shell into a full request document |
+| 7 | `7-refine-epic-request.md` | Interactive | Refine a shell into a full request document + create Jira ticket |
+| 8 | `8-amend-epic.md` | Interactive | Amend an active epic — insert/split/remove/resequence tasks |
 
-**Interactive prompts** (3, 5, 7) have a critical rule: the agent does NOT write any files until the human explicitly declares refinement complete.
+**Interactive prompts** (3, 5, 7, 8) have a critical rule: the agent does NOT write any files until the human explicitly declares refinement complete.
 
 ---
 
@@ -480,6 +584,7 @@ Agents do **not** bump version numbers. The commit types signal expected impact:
 | Epic | `epics/_templates/epic.md` | Frontmatter + Markdown |
 | Task-graph | `epics/_templates/task-graph.md` | Frontmatter + Mermaid + Markdown |
 | Delivery manifest | `epics/_templates/delivery.yaml` | Pure YAML |
+| Jira ticket templates | `config/jira-ticket-templates.md` | Markdown |
 | Request | `agent-development/pending/_TEMPLATE-request.md` | Frontmatter + Markdown |
 | Plan manifest | `agent-development/plans/_templates/manifest.yaml` | Pure YAML |
 | Plan specification | `agent-development/plans/_templates/specification.md` | Frontmatter + Markdown |
@@ -558,15 +663,21 @@ If a task changes user-facing behavior, the executing agent updates `README.md` 
 
 ### "I want to plan a large feature (multi-task)"
 
-1. **Prompt 5** → interactive session → produces `epic.md` (status: `decomposed`)
-2. **Prompt 6** → agent produces `task-graph.md` + `delivery.yaml` + request shells
-3. **Create Jira tickets** (manual or via MCP) → record IDs in `task-graph.md`
-4. **Prompt 7** per task → interactive refinement → full request (status: `refined`)
-5. **Activate** → copy request to `pending/`, update status to `activated`
-6. **Prompt 1** → plan produced (status: `pending-approval`)
-7. **Approve** → update approval fields in manifest.yaml
-8. **Prompt 2** → agent executes, creates branch + draft PR, commits progressively
-9. Update `delivery.yaml` as PRs are created and merged
+1. **Prompt 5** (EM + Tech Lead) → interactive session → produces `epic.md` (status: `decomposed`)
+2. **Prompt 6** (Tech Lead) → agent produces `task-graph.md` + `delivery.yaml` + request shells
+3. **Prompt 7** per task (Tech Lead) → interactive refinement → full request (status: `refined`) + Jira ticket
+4. **Activate** → copy request to `pending/`, update status to `activated`
+5. **Prompt 1** → plan produced (status: `pending-approval`)
+6. **Approve** → update approval fields in manifest.yaml
+7. **Prompt 2** → agent executes, creates branch + draft PR, commits progressively
+8. Update `delivery.yaml` as PRs are created and merged
+
+### "I need to change an active epic's scope"
+
+1. **Prompt 8** (Tech Lead) → interactive session → assess impact + propose changes
+2. Agent updates `task-graph.md`, `delivery.yaml`, and request files
+3. Agent creates new Jira tickets / updates existing ones (if MCP available)
+4. New tasks flow back into the normal pipeline: Refine → Activate → Plan → Execute
 
 ### "I want to plan the next task"
 

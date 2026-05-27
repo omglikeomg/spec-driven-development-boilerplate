@@ -22,16 +22,21 @@ tasks:
 # ─────────────────────────────────────────────────────────────────────────────
 # Negotiations & scope changes (post-approval)
 # Added when scope is renegotiated after the epic was already confirmed.
+# Use Prompt 8 (Amend Epic) to trigger and record these changes.
 # ─────────────────────────────────────────────────────────────────────────────
 negotiations: []
 # Example:
 #   - id: "neg-1"
 #     date: 2026-05-20
 #     trigger: "Design review revealed mobile viewport issues"
+#     type: design          # product | design | engineering | policy
 #     original_scope: "Single award tile component for all viewports"
 #     revised_scope: "Separate mobile and desktop award tile variants"
 #     rationale: "Mobile layout cannot accommodate the full tile anatomy"
-#     impacted_tasks: [3, 4]
+#     tasks_added: [6]      # New task IDs created for this amendment
+#     tasks_modified: [3]   # Existing tasks whose scope was updated
+#     tasks_removed: []     # Tasks marked as skipped
+#     impacted_tasks: [3, 4] # Tasks whose dependencies changed
 #     decided_by: "Ivan Martinez"
 ---
 
@@ -65,28 +70,32 @@ _Legend: Independent tasks have no incoming edges. Arrows show "must complete be
 
 ## Jira Ticket Creation
 
-_Create Jira tickets after this task-graph is reviewed and confirmed. This ensures ticket IDs exist before any branch is created (required by the commit-msg hook)._
+_Jira tickets are created during task refinement (Prompt 7), NOT at breakdown time. This ensures each ticket is born with full requirements, acceptance criteria, and context._
 
 ### When to Create
 
-- **Timing:** After the task-graph is finalized but before any task is activated.
-- **Create all tickets at once** so you can set up dependency links (blocks / is-blocked-by) matching the dependency edges.
-- **If Atlassian MCP is available:** The agent can create tickets automatically after you confirm the task-graph. It will read `sdd/config/teams.yaml` for project defaults.
+- **Timing:** After each task is refined via Prompt 7 (status moves to `refined`).
+- **Why not earlier?** At breakdown time, tasks are shells with minimal detail. Creating tickets then leads to barren tickets that need heavy updates later.
+- **If Atlassian MCP is available:** The agent creates the ticket automatically during Prompt 7, following `config/jira-ticket-templates.md` for content structure.
 
 ### How to Create
 
-1. Create a Jira ticket for each task in the graph (use issue type from `teams.yaml`).
-2. Set the Epic Link to the parent Jira epic.
-3. Set "Blocks" / "Is Blocked By" relationships matching the dependency edges.
-4. Copy the ticket ID back into the `jira_ticket` field in the frontmatter above.
-5. Optionally, link to the request file in the ticket description.
+1. During Prompt 7, after writing the refined request, the agent offers to create the Jira ticket.
+2. The ticket is populated with full requirements, acceptance criteria, context, and dependency links.
+3. The ticket ID is recorded in:
+   - The request file's `jira_ticket` frontmatter field
+   - The `task-graph.md` frontmatter for that task
+4. Epic Link is set to the parent epic's Jira ticket.
+5. "Blocks" / "Is Blocked By" relationships are set based on the dependency graph.
 
-### Enrichment (recommended)
+### Content Standard
 
-After a request is refined (Prompt 7), update the Jira ticket with:
-- Full requirements from the request's Requirements section
-- Acceptance criteria from the Deliverables / Agent Checklist sections
-- Any edge cases or technical notes worth surfacing in Jira
+See `config/jira-ticket-templates.md` for the full ticket content template. Every ticket must include at minimum:
+- Context (epic link, dependencies, current state)
+- Goal statement
+- Requirements list
+- Acceptance criteria (3+ verifiable criteria)
+- Dev notes (key files, patterns to follow)
 
 ## Activation Checklist
 

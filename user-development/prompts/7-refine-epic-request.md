@@ -1,6 +1,6 @@
 # Prompt: Refine an Epic Request (Interactive)
 
-> **Usage:** Copy this prompt into a new agent conversation. Provide the path to the request shell file you want to refine. The agent will guide you through a technical refinement session before writing the full request document.
+> **Usage:** Copy this prompt into a new agent conversation. Provide the path to the request shell file you want to refine. The agent will guide you through a technical refinement session before writing the full request document and creating the Jira ticket.
 
 ---
 
@@ -33,9 +33,11 @@ Before your first response, silently read:
 3. **The request shell** — the file specified in Input above
 4. **Agent specs** — all files in `agent-development/agent-specs/`
 5. **Team config** — `config/teams.yaml`
-6. **Relevant source code** — read the files/modules this task will touch
-7. **Predecessor outputs** — if dependencies exist, check `done/plans/` for their results
-8. **Status reference** — `user-development/STATUS-REFERENCE.md`
+6. **Jira ticket templates** — `config/jira-ticket-templates.md`
+7. **Request template** — `agent-development/pending/_TEMPLATE-request.md`
+8. **Relevant source code** — read the files/modules this task will touch
+9. **Predecessor outputs** — if dependencies exist, check `done/plans/` for their results
+10. **Status reference** — `user-development/STATUS-REFERENCE.md`
 
 ---
 
@@ -60,19 +62,31 @@ Ask implementation-focused questions in batches of 3-5:
 | API checkpoint | "This changes the response shape. Should this stage pause for API verification?" |
 | Error handling | "If API returns unexpected data — fail silently or throw?" |
 | Complexity estimate | "I estimate this as Fibonacci 5. Does that match your sense?" |
+| Acceptance criteria | "I'm thinking these scenarios define 'done' — anything missing?" |
 
-### Phase 3: Confirm Scope
+### Phase 3: Acceptance Criteria Draft
+
+Before writing, explicitly propose acceptance criteria:
+
+1. **List 3-8 specific acceptance criteria** in verifiable format:
+   - Use "Given / When / Then" for behavioral criteria
+   - Use checkbox-style for state-based criteria
+   - Each criterion must be independently testable
+2. **Ask:** "Do these acceptance criteria capture everything? Anything to add or modify?"
+
+### Phase 4: Confirm Scope
 
 Before writing, summarize:
 1. Files created / modified / not touched
 2. Key decisions made
-3. Anything deferred to later tasks
-4. Complexity estimate (Fibonacci)
-5. Whether `api_checkpoint` should be true
+3. Acceptance criteria (final list)
+4. Anything deferred to later tasks
+5. Complexity estimate (Fibonacci)
+6. Whether `api_checkpoint` should be true
 
 Ask: "Does this scope look right? Should I write the request?"
 
-### Phase 4: Write (only when I say so)
+### Phase 5: Write (only when I say so)
 
 1. **Overwrite the request shell** at `epics/active/<N-epic-name>/requests/<N-task.md>`
 2. **Use the full template** from `agent-development/pending/_TEMPLATE-request.md`
@@ -80,11 +94,43 @@ Ask: "Does this scope look right? Should I write the request?"
    - `status: refined`
    - `complexity: <fibonacci>`
    - `api_checkpoint: <true/false>`
-   - `jira_ticket:` from `task-graph.md` (or `null` if not yet created)
-4. **Include all sections:** Goal, Context, Requirements, Implementation Details, Edge Cases, Deliverables, Agent Checklist
+   - `last_updated: <today>`
+4. **Include ALL sections with full content:**
+   - **Goal** — clear end-state description
+   - **Context** — current state, what changes, how it fits the epic
+   - **Requirements** — numbered, concrete, verifiable (expanded from shell)
+   - **Implementation Details** — files, patterns, signatures, algorithms
+   - **Edge Cases** — specific scenarios with expected behavior
+   - **Deliverables** — checklist of tangible outputs
+   - **Acceptance Criteria** — the verified criteria from Phase 3
+   - **Agent Checklist** — runnable verification steps
 5. **Embed decisions** from our conversation into Implementation Details and Edge Cases
 6. **Update `task-graph.md`** frontmatter — change this task's status from `draft` to `refined`
-7. **If Atlassian MCP available and Jira ticket exists:** Optionally enrich the ticket with requirements and acceptance criteria
+
+### Phase 6: Jira Ticket Creation
+
+After the request file is written, proceed to create the Jira ticket:
+
+1. **Ask:** "Should I create the Jira ticket now?"
+2. If yes:
+   - Read `config/teams.yaml` for project settings (issue type, project key)
+   - Read `config/jira-ticket-templates.md` for the content template
+   - Create the ticket using the **Standard Task Ticket** template (or **Experiment Task Ticket** if applicable)
+   - Populate with:
+     - Title from the request
+     - Context (epic link, dependencies, current state)
+     - Goal from the request
+     - Requirements from the request
+     - Full acceptance criteria from the request
+     - Dev notes (key files, patterns)
+     - Design links (from epic references)
+     - Product brief link (from epic references)
+   - Set Epic Link to the parent epic's Jira ticket
+   - Set "Blocks" / "Is Blocked By" dependency links based on `task-graph.md`
+   - Record ticket ID back into:
+     - The request file's `jira_ticket` frontmatter field
+     - The `task-graph.md` frontmatter for this task
+3. If no: leave `jira_ticket: null` for manual creation later.
 
 ---
 
@@ -94,3 +140,12 @@ The finished request must be detailed enough that:
 - The planning agent (Prompt 1) produces a plan without asking clarifying questions
 - The executing agent (Prompt 2) implements without making architectural decisions
 - A human reviewer approves the plan quickly because all ambiguity was resolved here
+- The Jira ticket (if created) is self-contained — any team member can understand the task without opening the repo
+
+## Acceptance Criteria Quality Bar
+
+Each acceptance criterion must be:
+- **Specific** — not "it works correctly" but "returns 200 with `{ awards: [...] }` shape"
+- **Testable** — someone can verify pass/fail without ambiguity
+- **Independent** — each criterion can be verified separately
+- **Complete** — together they cover the happy path, error cases, and edge cases identified during refinement

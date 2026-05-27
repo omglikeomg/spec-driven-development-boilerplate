@@ -57,6 +57,16 @@ api_checkpoint: false # true if this task changes observable API behavior (endpo
 - [ ] Deliverable 1
 - [ ] Deliverable 2
 
+## Acceptance Criteria
+
+<!-- Verifiable criteria that define "done" for this task. Added during refinement (Prompt 7). -->
+<!-- Use specific, testable statements. Prefer Given/When/Then for behavioral criteria. -->
+<!-- Together these should cover: happy path, error cases, and edge cases. -->
+
+- [ ] [Criterion 1 — specific and testable]
+- [ ] [Criterion 2 — specific and testable]
+- [ ] [Criterion 3 — specific and testable]
+
 ## Agent Checklist
 
 <!-- Verification steps the implementing agent must complete before marking this task as done. These should be concrete, runnable checks — not vague affirmations. -->
