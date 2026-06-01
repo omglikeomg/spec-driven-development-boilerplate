@@ -89,6 +89,18 @@ _Key decisions from the interactive discovery session (Prompt 5). These provide 
 |---|---|---|---|
 | 1 | ... | ... | ... |
 
+## Definition of Done
+
+_Established during epic creation (Prompt 5). Defines what "done" means for the entire epic — beyond individual task completion._
+
+- [ ] **Deployment:** [Feature flags removed / staged rollout complete / fully launched]
+- [ ] **Monitoring:** [Alerts configured / dashboards created / error rate baseline confirmed]
+- [ ] **Sign-offs:** [QA regression pass / PM acceptance / stakeholder demo]
+- [ ] **Documentation:** [User docs updated / training materials delivered / runbook created]
+- [ ] **Success metrics:** [Metric X meets threshold Y within Z time period]
+
+_Adjust or remove criteria that don't apply. Add project-specific criteria as needed._
+
 ## References
 
 - _Links to designs, PRDs, Slack threads, related epics, etc._

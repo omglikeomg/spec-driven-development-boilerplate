@@ -28,9 +28,10 @@ Before writing any code:
 
 1. Verify `manifest.yaml` → `plan_metadata.approval.status == "approved"`
 2. Verify no `PENDING` markers remain in `specification.md`
-3. Read `config/teams.yaml` for branch naming and commit conventions
-4. Create the feature branch following the naming format in teams.yaml
-5. Open a **draft PR** — first commit can be a reference to the plan (or empty commit with plan summary in body)
+3. Read `config/teams.yaml` for commit conventions
+4. Verify you are on the correct feature branch (created during planning)
+5. Verify a draft PR already exists for this branch (created during planning)
+6. If no branch/PR exists (legacy flow), create the branch and open a draft PR using `gh pr create --draft`
 
 ---
 

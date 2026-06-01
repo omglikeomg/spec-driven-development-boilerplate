@@ -19,18 +19,21 @@ Before producing the breakdown, read:
 3. **Team config** — `config/teams.yaml` (for Jira settings, branching conventions)
 4. **Architecture docs** — relevant files from `agent-development/agent-specs/architecture-breakdown.md`
 5. **Relevant source code** — files/modules identified in the epic's Technical Constraints
-6. **Templates:**
+6. **Software Design Document** — linked in `epic.md` references (goals, non-goals, milestones, estimation). If milestones are not present in the design doc or epic, ask the user to provide them before proceeding.
+7. **Templates:**
    - `epics/_templates/task-graph.md`
    - `epics/_templates/delivery.yaml`
    - `agent-development/pending/_TEMPLATE-request.md` (request structure to follow)
    - `config/jira-ticket-templates.md` (for understanding what Jira tickets will need)
-7. **Status reference** — `user-development/STATUS-REFERENCE.md`
+8. **Status reference** — `user-development/STATUS-REFERENCE.md`
 
 ---
 
 ## Your Task
 
 Decompose the epic into a task DAG. Each task becomes a request file — at this stage you produce **shells** with enough structure that refinement (Prompt 7) can fill in details without restructuring. The shells must follow the same section layout as the full request template.
+
+**Milestone alignment:** Map tasks to the milestones defined in the Software Design Document (or epic). Each milestone should correspond to a merge-group in `delivery.yaml` — when all tasks in a milestone's group are merged, the milestone is considered reached. If milestones are not yet defined, ask the user to provide them before producing the breakdown.
 
 ---
 
@@ -173,6 +176,7 @@ After presenting the breakdown, inform the human:
 Provide:
 - Total tasks and complexity distribution
 - Critical path (longest dependency chain)
+- Milestone mapping (which merge groups correspond to which milestones from the Software Design Document)
 - Which tasks can be parallelized
 - Recommended refinement order (which tasks to refine first)
 - Recommended activation order

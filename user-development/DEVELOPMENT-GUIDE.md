@@ -4,6 +4,8 @@ This document describes the development workflow used in this project. It follow
 
 > **Note:** This guide is part of the [SDD Boilerplate](../README.md). It is designed to be adopted as-is into new projects. Project-specific details live in `agent-development/agent-specs/` and `config/teams.yaml`.
 >
+> **Team flow:** For the end-to-end squad choreography integrating Figma, Jira, and GitHub, see [SQUAD_FLOW.md](./SQUAD_FLOW.md).
+>
 > **First time here?** If you're setting up SDD in an existing repo, start with [ADOPTION.md](../ADOPTION.md) — it covers the full bootstrapping sequence including `bin/dev` setup, `commands.yaml` configuration, and the order of operations.
 
 ---

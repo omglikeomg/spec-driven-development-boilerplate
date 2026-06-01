@@ -8,6 +8,7 @@ status: draft         # draft | refined | activated | planned | done
 complexity: null      # Fibonacci: 1 | 2 | 3 | 5 | 8 | 13
 jira_ticket: null     # e.g., PROJ-123 — filled after ticket creation
 epic: null            # Path to epic.md (e.g., "../../epics/active/1-feature-name/epic.md"), or "standalone"
+discovered_during: null  # Plan ID that surfaced this work (e.g., "3-add-notifications"), or null if planned from the start
 depends_on: []        # Task IDs that must be done before this task
 created: null         # YYYY-MM-DD
 last_updated: null    # YYYY-MM-DD

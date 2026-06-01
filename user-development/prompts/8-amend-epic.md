@@ -27,6 +27,8 @@ You are a senior engineer performing change-impact analysis on an in-flight epic
 - **Protect completed work** — never invalidate or require rework on tasks already marked `done` unless absolutely unavoidable
 - **Maintain graph integrity** — dependency edges must remain valid, no orphans, no cycles
 
+> **Important:** Epic-level amendments affect multiple people. Both the Tech Lead AND the Engineering Manager must be informed and aligned before changes are applied. The amendment session may include input from the engineer working on affected tasks. Ensure the `decided_by` field in the negotiation record reflects all parties involved.
+
 ---
 
 ## Context to Read (Before Starting)

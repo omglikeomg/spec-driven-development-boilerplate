@@ -11,11 +11,11 @@
 metadata:
   epic_id: null
   epic_title: ""
-  base_branch: "main"             # From sdd/config/teams.yaml
-  branching_strategy: independent  # independent | stacked
+  base_branch: "main" # From sdd/config/teams.yaml
+  branching_strategy: independent # independent | stacked
   strategy_rationale: ""
-  created: null                    # YYYY-MM-DD
-  last_updated: null               # YYYY-MM-DD
+  created: null # YYYY-MM-DD
+  last_updated: null # YYYY-MM-DD
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PR DAG — each node represents one Pull Request
@@ -45,9 +45,11 @@ merge_order: []
 # Example:
 #   - group: 1
 #     description: "Independent — can merge in any order"
+#     milestone: "M1: Infrastructure"   # Maps to Software Design Document milestone
 #     nodes: ["pr-1", "pr-2"]
 #   - group: 2
 #     description: "After group 1 merges"
+#     milestone: "M2: Core Feature"
 #     nodes: ["pr-3"]
 
 # ─────────────────────────────────────────────────────────────────────────────

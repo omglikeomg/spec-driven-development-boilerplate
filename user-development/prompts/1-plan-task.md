@@ -28,6 +28,14 @@ Before planning, read and internalize:
 
 Produce a complete plan folder. For epic tasks: create in the epic's `plans/` directory (e.g., `sdd/epics/active/N-epic-name/plans/<N-task-name>/`). For standalone tasks: create in `sdd/agent-development/plans/<N-task-name>/`.
 
+After producing the plan, you must also:
+1. **Create a feature branch** from `main` following the naming convention in `config/teams.yaml`
+2. **Commit the plan folder** to the branch
+3. **Push the branch and open a draft PR** using the `gh` CLI:
+   ```bash
+   gh pr create --draft --title "plan: <ticket-id> <short-description>" --body "Plan for review. See specification.md for details."
+   ```
+
 The folder must contain:
 
 ### 1. `manifest.yaml`
@@ -75,5 +83,7 @@ The folder must contain:
 Present each artifact as a code block with its file path as heading.
 Ask me before saving any files.
 
-After saving, remind me:
-> "Review `specification.md`, resolve any PENDING questions, then set `manifest.yaml` → `approval.status: approved` when ready to execute."
+After saving:
+1. Create the branch, commit, push, and open the draft PR as described above.
+2. Remind me:
+> "Draft PR is open. Review `specification.md`, resolve any PENDING questions, then set `manifest.yaml` → `approval.status: approved` when ready to execute."

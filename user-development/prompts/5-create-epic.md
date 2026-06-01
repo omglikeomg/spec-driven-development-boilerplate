@@ -66,6 +66,7 @@ Ask questions organized by category. Only ask categories that are relevant. Pres
 | ⚠️ Risk & dependencies | What could break, external dependencies, migration concerns |
 | 🚫 Scope boundaries | What's explicitly out, what should be deferred |
 | 📐 Sizing & sequencing | Complexity estimate, should this be one epic or multiple |
+| ✅ Definition of Done | What constitutes "done" for this epic — deployment criteria, rollout strategy, monitoring expectations, required sign-offs |
 
 ### Phase 3: Challenge & Surface Risks
 
@@ -80,6 +81,12 @@ When I explicitly indicate discovery is complete:
 3. **Write `epic.md`** following `epics/_templates/epic.md`:
    - Fill YAML frontmatter (id, title, status: `decomposed`, complexity, created, jira_epic: null, references)
    - Include "Decisions Made During Discovery" section capturing key Q&A
+   - Include "Definition of Done" section with explicit completion criteria:
+     - What constitutes production-ready (feature flags, staged rollout, full launch?)
+     - Required monitoring / analytics confirmation
+     - Required sign-offs (QA, PM acceptance, stakeholder demo?)
+     - Any documentation or training materials needed before closure
+     - Success metrics or thresholds (if applicable)
 4. **Create an empty `requests/` subdirectory**
 5. **If Atlassian MCP is available:** Ask me if I want you to create the Jira epic ticket now (using settings from `config/teams.yaml`). If yes, create it and fill `jira_epic` in frontmatter.
 

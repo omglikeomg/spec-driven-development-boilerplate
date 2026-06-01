@@ -123,7 +123,7 @@ After the request file is written, proceed to create the Jira ticket:
      - Requirements from the request
      - Full acceptance criteria from the request
      - Dev notes (key files, patterns)
-     - Design links (from epic references)
+     - Design links (from epic references — propagate Figma URLs relevant to this task)
      - Product brief link (from epic references)
    - Set Epic Link to the parent epic's Jira ticket
    - Set "Blocks" / "Is Blocked By" dependency links based on `task-graph.md`
