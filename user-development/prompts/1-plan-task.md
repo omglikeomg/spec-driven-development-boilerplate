@@ -1,6 +1,10 @@
 # Prompt: Plan a Task
 
-> **Usage:** Copy this prompt into a new agent conversation. Point it at an activated request in `agent-development/pending/`. The agent produces a plan folder ready for human review.
+> **Invocation:** In a fresh agent session, ask to plan a task and reference the request file. The agent will load the `sdd-plan-task` skill automatically.
+>
+> **Example:** "Plan the task in `agent-development/pending/3-add-notifications.md`"
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 

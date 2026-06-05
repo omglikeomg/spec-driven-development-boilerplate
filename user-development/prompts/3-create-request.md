@@ -1,8 +1,12 @@
 # Prompt: Create a Request (Interactive Discovery)
 
-> **Usage:** Copy this prompt into a new agent conversation. Provide a description of the feature or change you want. The agent will guide you through a technical discovery session before writing the request document.
+> **Invocation:** In a fresh agent session, describe the feature you want. The agent will load the `sdd-create-request` skill automatically.
 >
-> **Note:** If this request is part of an existing epic, use **Prompt 7 (`refine-epic-request.md`)** instead — it has the epic context and produces the request in the right location.
+> **Example:** "I want to add email notifications when a user's subscription is about to expire"
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
+>
+> **Note:** If this request is part of an existing epic, use the `sdd-refine-request` skill instead — it has the epic context and produces the request in the right location.
 
 ---
 

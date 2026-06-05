@@ -147,18 +147,19 @@ This document feeds into Epic creation and prevents the agent from making unsupe
 | **Who** | EM + TL (with agent) |
 | **Input** | Product brief, software design document, Figma links |
 | **Output** | `epic.md` + `task-graph.md` + `delivery.yaml` + request shells + Jira Epic |
-| **Tools** | Agent (Prompts 5 → 6), Jira MCP |
-| **Sessions** | One interactive session for Prompt 5, one fresh session for Prompt 6 |
+| **Tools** | `sdd-create-epic` skill (Prompt 5) + `sdd-break-down-epic` skill (Prompt 6), Jira MCP |
+| **Sessions** | One interactive session for epic creation, one fresh session for breakdown |
 
-**Prompt 5 (Interactive — 20-60 min):**
+**`sdd-create-epic` skill (Interactive — 20-60 min):**
 1. EM + TL open a fresh agent session
-2. Provide: product brief, software design doc, Figma links
+2. Describe the feature and provide: product brief, software design doc, Figma links
 3. Engage in discovery — the agent asks clarifying questions, you answer
 4. When discovery is complete, declare it done — agent writes `epic.md`
 
-**Prompt 6 (One-shot):**
+**`sdd-break-down-epic` skill (One-shot):**
 1. Open a fresh agent session
-2. Agent reads the completed `epic.md` and produces:
+2. Ask to break down the epic: "Break down the epic in `epics/active/N-name/`"
+3. Agent reads the completed `epic.md` and produces:
    - `task-graph.md` with dependency DAG
    - `delivery.yaml` with PR structure
    - Request shells in `epics/active/N-name/requests/`
@@ -175,13 +176,14 @@ This document feeds into Epic creation and prevents the agent from making unsupe
 | **Who** | TL + ENG (with agent) |
 | **Input** | Request shells, codebase access, component-level Figma designs |
 | **Output** | Full request documents (status: `activated`) + Jira task tickets |
-| **Tools** | Agent (Prompt 7), Jira MCP |
+| **Tools** | `sdd-refine-request` skill (Prompt 7), Jira MCP |
 | **Sessions** | One fresh interactive session per task (10-30 min each) |
 
 The TL and the assigned engineer pair on refinement:
 
 1. Open a fresh agent session per task
-2. Use Prompt 7 — interactive refinement fills in technical details, answers key questions, establishes acceptance criteria
+2. Ask to refine: "Refine the request at `epics/active/N-name/requests/2-component.md`"
+3. Interactive refinement fills in technical details, answers key questions, establishes acceptance criteria
 3. When complete, agent writes the full request and creates the Jira ticket
 4. TL marks the request status as `activated` in the same session (since the team moves fast, activation happens immediately after refinement)
 
@@ -200,11 +202,11 @@ The TL and the assigned engineer pair on refinement:
 | **Who** | ENG (with agent) |
 | **Input** | Activated request, agent-specs, codebase |
 | **Output** | Plan folder (manifest + specification + stages) on a feature branch |
-| **Tools** | Agent (Prompt 1), Git |
+| **Tools** | `sdd-plan-task` skill (Prompt 1), Git |
 | **Session** | Fresh agent session |
 
 1. Engineer opens a fresh agent session
-2. Uses Prompt 1 — agent reads the request + agent-specs and produces the plan
+2. Asks to plan: "Plan the task in `epics/active/N-name/requests/1-task.md`" — agent loads `sdd-plan-task` skill
 3. Agent creates the branch from `main` following the naming convention, commits the plan folder, pushes, and opens a **draft PR** using the `gh` CLI:
    ```
    gh pr create --draft --title "plan: <ticket-id> <description>" --body "..."
@@ -243,11 +245,11 @@ The TL and the assigned engineer pair on refinement:
 | **Who** | ENG (with agent) |
 | **Input** | Approved plan on the feature branch |
 | **Output** | Implemented code + updated docs + plan archived to `done/` |
-| **Tools** | Agent (Prompt 2), Git |
+| **Tools** | `sdd-execute-plan` skill (Prompt 2), Git |
 | **Session** | Fresh agent session on the same feature branch |
 
 1. Engineer opens a **new** agent session (not the planning session) on the feature branch
-2. Uses Prompt 2 — agent verifies approval, then executes stages in order
+2. Asks to execute: "Execute the plan in `plans/1-task/`" — agent loads `sdd-execute-plan` skill, verifies approval, then executes stages in order
 3. Agent commits progressively (multiple commits per stage allowed)
 4. After all stages complete, agent:
    - Updates spec/doc files as needed
@@ -302,18 +304,27 @@ After a request is merged, the next activated request can immediately enter Step
 
 ## Session Discipline
 
-Each prompt should be used in a **fresh agent session**. This is not arbitrary — it's a deliberate practice:
+Each workflow step should be performed in a **fresh agent session**. This is not arbitrary — it's a deliberate practice:
 
 | Reason | Explanation |
 |--------|-------------|
 | **Context clarity** | A fresh session starts with clean context. The agent reads exactly what it needs from files, not from stale conversation history. |
 | **Audit boundaries** | Each session = one unit of work. If something goes wrong, you know which session caused it. |
-| **Prompt fidelity** | Prompts are designed as self-contained instructions. Residual context from a prior task can cause the agent to conflate requirements. |
+| **Skill fidelity** | Skills are designed as self-contained protocols. Residual context from a prior task can cause the agent to conflate requirements. |
 | **Reproducibility** | A fresh session given the same files will produce the same result. A continued session may drift. |
+
+**How to invoke:** Simply state your intent and reference the relevant file. The agent automatically loads the appropriate skill:
+
+```
+"Plan the task in pending/3-docker-infrastructure.md"
+"Execute the plan in plans/3-docker-infrastructure/"
+"I want to add a notification feature for expiring subscriptions"
+"Refine the request at epics/active/1-awards/requests/3-migrate-component.md"
+```
 
 **The one exception:** During Step 6 (approval), if the engineer is already on the branch and wants to quickly ask the agent to update the approval fields, a short follow-up in the *planning* session is acceptable — the state hasn't changed.
 
-**Rule of thumb:** If you're switching prompts (e.g., from Prompt 1 to Prompt 2), always start a fresh session.
+**Rule of thumb:** If you're switching to a different skill (e.g., from planning to execution), always start a fresh session.
 
 ---
 
@@ -495,16 +506,16 @@ graph TD
    ```
    git reset --hard <last-plan-commit>
    ```
-4. Opens a fresh agent session, re-runs Prompt 1 with updated context (the original request + what was learned)
+4. Opens a fresh agent session, re-runs `sdd-plan-task` with updated context (the original request + what was learned)
 5. New plan replaces the old plan on the same branch
 6. Review and approval cycle repeats (Steps 6-7)
 
 **If a followup request is needed:**
-- Engineer uses Prompt 3 to create the new request
-- TL adds it to the epic via amendment (Prompt 8) or as a standalone if it's independent
+- Engineer uses `sdd-create-request` in a **separate** agent session
+- TL adds it to the epic via amendment (`sdd-amend-epic`) or as a standalone if it's independent
 - The new request enters the pipeline at Step 5
 
-### Epic-Level Refinement (Prompt 8)
+### Epic-Level Refinement (`sdd-amend-epic` skill)
 
 **When:** The issue affects multiple tasks, changes acceptance criteria, or invalidates the epic's assumptions.
 
@@ -517,7 +528,7 @@ graph TD
 **Process:**
 1. Engineer **stops execution** and informs both TL and EM immediately
 2. TL, EM, and the engineer collaborate on the refinement (can be async via comments/threads or sync via a short call)
-3. TL opens a fresh agent session and uses Prompt 8 (interactive amendment), incorporating input from all parties
+3. TL opens a fresh agent session and describes the change: "The design team revised the mobile layout for the awards epic at `epics/active/1-awards/`" — agent loads `sdd-amend-epic` skill, incorporating input from all parties
 4. Agent assesses impact, proposes minimal changes, records negotiation
 5. Updates cascade: `task-graph.md`, `delivery.yaml`, affected request files, Jira tickets
 6. Affected in-flight tasks must be re-evaluated:
@@ -570,7 +581,7 @@ graph TD
 
 ### Non-Blocking Followups
 
-1. Engineer creates a request using Prompt 3 in a **separate** agent session
+1. Engineer creates a request using `sdd-create-request` in a **separate** agent session
 2. Tags the request with `discovered_during: <plan-id>` in the frontmatter
 3. Request goes into `agent-development/pending/` (standalone) or is added to the epic via TL
 4. Engineer continues current execution uninterrupted
@@ -580,8 +591,8 @@ graph TD
 
 1. Engineer stops and immediately notifies TL
 2. TL decides:
-   - **If small enough for a quick fix:** Engineer uses Prompt 4 to resolve it first, then resumes execution
-   - **If it's a real task:** TL amends the epic (Prompt 8) to add the prerequisite, updates dependency graph, and the new task goes through the full pipeline first
+   - **If small enough for a quick fix:** Engineer uses `sdd-quick-fix` to resolve it first, then resumes execution
+   - **If it's a real task:** TL amends the epic (`sdd-amend-epic` skill) to add the prerequisite, updates dependency graph, and the new task goes through the full pipeline first
    - **If it changes the current plan:** Engineer follows the [Plan-Level Refinement](#plan-level-refinement) path
 
 ### Documentation
@@ -678,11 +689,11 @@ These criteria are captured in the `epic.md` acceptance section and flow down to
 |------|:--:|:--:|:--:|:---:|:-----:|------|
 | 1. Product Brief | ✍️ | — | C | — | — | Figma, Confluence |
 | 2. Software Design | — | C | ✍️ | — | — | Confluence |
-| 3. Epic Creation | C | ✍️ | ✍️ | — | 🤖 | Prompts 5+6, Jira MCP |
-| 4. Task Refinement | — | — | ✍️ | ✍️ | 🤖 | Prompt 7, Jira MCP |
-| 5. Planning | — | — | — | ✍️ | 🤖 | Prompt 1, Git |
+| 3. Epic Creation | C | ✍️ | ✍️ | — | 🤖 | `sdd-create-epic` + `sdd-break-down-epic`, Jira MCP |
+| 4. Task Refinement | — | — | ✍️ | ✍️ | 🤖 | `sdd-refine-request`, Jira MCP |
+| 5. Planning | — | — | — | ✍️ | 🤖 | `sdd-plan-task`, Git |
 | 6. Plan Approval | — | — | 👁️ | ✍️ | — | GitHub PR |
-| 7. Execution | — | — | — | ✍️ | 🤖 | Prompt 2, Git |
+| 7. Execution | — | — | — | ✍️ | 🤖 | `sdd-execute-plan`, Git |
 | 8. Review + QA | — | — | — | 👁️ | — | GitHub PR, PR Env |
 | 9. Merge + Deploy | — | — | — | ✍️ | — | GitHub, CI/CD |
 
@@ -696,7 +707,7 @@ _✍️ = performs the work, 👁️ = reviews, C = consulted, 🤖 = agent assi
 
 For work that doesn't belong to an epic (one-off fixes, small features, tech debt):
 
-1. TL or ENG creates request via Prompt 3 → `agent-development/pending/`
+1. TL or ENG creates request via `sdd-create-request` → `agent-development/pending/`
 2. Flow continues from Step 5 (Planning) onwards
 3. No `delivery.yaml` coordination needed — the plan's own `manifest.yaml` tracks delivery
 
@@ -704,7 +715,7 @@ For work that doesn't belong to an epic (one-off fixes, small features, tech deb
 
 For trivial changes (1-3 files, no ambiguity):
 
-1. ENG uses Prompt 4 in a fresh session
+1. ENG describes the change in a fresh session — agent loads `sdd-quick-fix`
 2. Agent implements, verifies, produces log file
 3. No plan, no approval gate, no PR review beyond standard CI
 4. If the agent discovers the change is too large → stops and recommends full pipeline
@@ -713,6 +724,6 @@ For trivial changes (1-3 files, no ambiguity):
 
 When production breaks after a merge:
 
-1. If the fix is trivial and obvious → Quick Fix Track (Prompt 4) directly on a `hotfix/` branch
-2. If the fix requires investigation → new request (Prompt 3), expedited through the pipeline
+1. If the fix is trivial and obvious → `sdd-quick-fix` directly on a `hotfix/` branch
+2. If the fix requires investigation → new request (`sdd-create-request`), expedited through the pipeline
 3. If a rollback is needed → revert the merge commit, then investigate via normal flow

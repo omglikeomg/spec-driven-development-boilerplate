@@ -1,6 +1,10 @@
 # Prompt: Break Down an Epic into Tasks
 
-> **Usage:** Copy this prompt into a new agent conversation. Provide the path to the approved epic folder. The agent will produce a task graph, delivery manifest, and skeleton request files.
+> **Invocation:** In a fresh agent session, ask to break down the epic. The agent will load the `sdd-break-down-epic` skill automatically.
+>
+> **Example:** "Break down the epic in `epics/active/1-awards-enhancement/`"
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 

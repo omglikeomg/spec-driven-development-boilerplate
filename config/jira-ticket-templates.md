@@ -1,8 +1,10 @@
 # Jira Ticket Templates for SDD Tasks
 
 > **Location:** `config/jira-ticket-templates.md`  
-> **Used by:** Prompt 7 (Refine Request), Prompt 11 (Amend Epic)  
+> **Used by:** `sdd-refine-request` skill (Prompt 7), `sdd-amend-epic` skill (Prompt 8)  
 > **Purpose:** Defines the minimum content standard for Jira tickets created from SDD tasks.
+> 
+> **Customization:** Replace placeholder values (`[PROJ-XXX]`, `<repo-name>`, URLs) with your team's actual project key, repositories, and environment URLs. Keep the structure intact.
 
 ---
 
@@ -114,18 +116,16 @@ Use this **in addition to** the Standard template when the task involves A/B tes
 ### Experiment URLs
 
 **QA:**
-- Flipper URL: [URL]
-- Flipper ID: [ID]
-- Control: `https://qa-beta.theknot.com?vers=0`
-- Variant 1: `https://qa-beta.theknot.com?vers=1`
-- Variant 2: `https://qa-beta.theknot.com?vers=2`
+- Platform URL: [URL to experiment config in your experimentation platform]
+- Control: `https://qa.<your-domain>?variant=control`
+- Variant 1: `https://qa.<your-domain>?variant=1`
+- Variant 2: `https://qa.<your-domain>?variant=2`
 
 **PROD:**
-- Flipper URL: [URL]
-- Flipper ID: [ID]
-- Control: `www.theknot.com?vers=0`
-- Variant 1: `www.theknot.com?vers=1`
-- Variant 2: `www.theknot.com?vers=2`
+- Platform URL: [URL to experiment config]
+- Control: `https://<your-domain>?variant=control`
+- Variant 1: `https://<your-domain>?variant=1`
+- Variant 2: `https://<your-domain>?variant=2`
 
 ### Important Experiment Notes
 

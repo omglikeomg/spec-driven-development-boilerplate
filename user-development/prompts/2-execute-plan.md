@@ -1,6 +1,10 @@
 # Prompt: Execute an Approved Plan
 
-> **Usage:** Copy this prompt into a new agent conversation. Point it at an approved plan folder. The agent creates the branch, opens a draft PR, and executes stages progressively.
+> **Invocation:** In a fresh agent session on the feature branch, ask to execute the plan. The agent will load the `sdd-execute-plan` skill automatically.
+>
+> **Example:** "Execute the approved plan in `agent-development/plans/3-add-notifications/`"
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 

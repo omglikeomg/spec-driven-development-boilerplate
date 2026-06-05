@@ -1,6 +1,10 @@
 # Prompt: Amend an Active Epic (Interactive)
 
-> **Usage:** Copy this prompt into a new agent conversation when an active epic needs modification. This handles: adding new tasks, splitting existing tasks, removing tasks, resequencing dependencies, or updating scope after external changes. Provide the epic path and describe what changed.
+> **Invocation:** In a fresh agent session, describe what changed and reference the epic. The agent will load the `sdd-amend-epic` skill automatically.
+>
+> **Example:** "The design team revised the mobile layout for the awards epic at `epics/active/1-awards/`. We need to add a separate mobile component."
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 

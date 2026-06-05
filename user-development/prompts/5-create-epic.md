@@ -1,6 +1,10 @@
 # Prompt: Create an Epic (Interactive Discovery)
 
-> **Usage:** Copy this prompt into a new agent conversation. Provide a product brief — this can be a PRD, a Slack message, a rough idea, or anything that describes the feature/project at a high level. The agent will guide you through an interactive discovery session before producing the epic document.
+> **Invocation:** In a fresh agent session, describe the large feature and provide the product brief. The agent will load the `sdd-create-epic` skill automatically.
+>
+> **Example:** "I want to create an epic for the new awards enhancement feature. Here's the product brief: [link or paste]"
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 

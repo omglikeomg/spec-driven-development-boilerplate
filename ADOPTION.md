@@ -169,12 +169,12 @@ If `bin/dev help` works, Phase 2 is complete.
 
 ## Phase 3: Agent Configures Itself (One Conversation)
 
-### Run Prompt 0
+### Run the Bootstrap
 
-1. Open a new agent conversation in your IDE.
-2. Paste the contents of `user-development/prompts/0-bootstrap-specs.md`.
-3. Provide context: project description, architecture notes, and/or let the agent read source code.
-4. The agent produces all five files in `agent-development/agent-specs/`:
+1. Open a new agent session in your IDE.
+2. Describe your project: what it does, who it's for, tech stack, key architectural decisions.
+3. Point the agent at your source code (if any) and say: "Bootstrap the agent-specs for this project"
+4. The agent loads the `sdd-bootstrap-specs` skill (or use `user-development/prompts/0-bootstrap-specs.md` as fallback) and produces all five files in `agent-development/agent-specs/`:
 
 | File | What It Contains |
 |------|------------------|
@@ -199,15 +199,20 @@ git commit -m "chore: adopt SDD boilerplate with project specs"
 
 ### Start using the workflow
 
-| I want to… | Use… |
-|------------|------|
-| Request a new feature | Prompt 3 (`3-create-request.md`) or Prompt 5 (`5-create-epic.md`) |
-| Plan a task | Prompt 1 (`1-plan-task.md`) |
-| Execute an approved plan | Prompt 2 (`2-execute-plan.md`) |
-| Make a quick fix | Prompt 4 (`4-quick-fix.md`) |
-| Define a large multi-task epic | Prompts 5 → 6 → 7 |
+In a fresh agent session, simply state your intent. The agent loads the appropriate skill automatically:
+
+| I want to… | Say something like… | Skill loaded |
+|------------|---------------------|-------------|
+| Request a new feature | "I want to add email notifications" | `sdd-create-request` |
+| Define a large multi-task epic | "Create an epic for the new payments feature" | `sdd-create-epic` |
+| Break down an epic | "Break down the epic in `epics/active/1-payments/`" | `sdd-break-down-epic` |
+| Refine a task | "Refine `epics/active/1-payments/requests/2-api.md`" | `sdd-refine-request` |
+| Plan a task | "Plan the task in `pending/1-docker-infrastructure.md`" | `sdd-plan-task` |
+| Execute an approved plan | "Execute the plan in `plans/1-docker-infrastructure/`" | `sdd-execute-plan` |
+| Make a quick fix | "Rename the `/books/list` endpoint to `/books`" | `sdd-quick-fix` |
 
 For the full pipeline details, read `user-development/DEVELOPMENT-GUIDE.md`.
+For end-to-end team choreography with Figma/Jira/GitHub, read `user-development/SQUAD_FLOW.md`.
 
 ---
 

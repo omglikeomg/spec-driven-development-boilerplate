@@ -1,6 +1,10 @@
 # Prompt: Bootstrap Project Specs
 
-> **Usage:** Copy this prompt into a new agent conversation when you are adopting the SDD boilerplate for a new project. Replace `<PROJECT_DESCRIPTION>` with a plain-language description of your project — what it does, who it's for, what tech stack you're using (or planning to use), and any key architectural decisions you've already made. If you have an existing codebase, also point the agent at the source tree so it can read the code directly.
+> **Invocation:** In a fresh agent session, describe your project and ask to bootstrap the agent-specs. The agent will load the `sdd-bootstrap-specs` skill automatically.
+>
+> **Example:** "Bootstrap the agent-specs for this project. It's a Next.js e-commerce app using Prisma and PostgreSQL."
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 
@@ -86,7 +90,7 @@ Once all files are generated, provide a summary:
 
 - 📄 Files created or updated (list each with a one-line description of what's in it)
 - ⚠️ Anything you were unsure about or had to guess (the developer should review these)
-- 🔜 Recommended next steps (typically: review the generated specs, then create your first task request using `user-development/prompts/3-create-request.md`)
+- 🔜 Recommended next steps (typically: review the generated specs, then start your first task — in a fresh session, describe what you want to build and the `sdd-create-request` skill will guide you)
 
 ## Notes
 

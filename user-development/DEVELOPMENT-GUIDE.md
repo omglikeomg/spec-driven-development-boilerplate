@@ -370,11 +370,10 @@ If any of these criteria aren't met, use the full pipeline instead.
 
 ### How It Works
 
-1. Open a new agent conversation.
-2. Paste the contents of `user-development/prompts/4-quick-fix.md`.
-3. Replace `<CHANGE_DESCRIPTION>` with a plain-language description.
-4. The agent makes the change, runs verification, and produces a summary.
-5. The agent creates a log file in `agent-development/done/quick-fixes/`.
+1. Open a new agent session.
+2. Describe the change you want — the agent loads the `sdd-quick-fix` skill.
+3. The agent makes the change, runs verification, and produces a summary.
+4. The agent creates a log file in `agent-development/done/quick-fixes/`.
 
 There is **no plan folder, no approval gate, and no request file**. The audit trail is the log file.
 
@@ -566,21 +565,28 @@ Agents do **not** bump version numbers. The commit types signal expected impact:
 
 ---
 
-## Prompt Templates
+## Prompt Templates & Skills
 
-| # | File | Type | Purpose |
-|---|---|---|---|
-| 0 | `0-bootstrap-specs.md` | One-shot | Bootstrap `agent-specs/` for a new project |
-| 1 | `1-plan-task.md` | One-shot | Generate a plan from an activated request |
-| 2 | `2-execute-plan.md` | One-shot | Execute an approved plan |
-| 3 | `3-create-request.md` | Interactive | Standalone request — technical discovery + write |
-| 4 | `4-quick-fix.md` | One-shot | Small change that skips the full pipeline |
-| 5 | `5-create-epic.md` | Interactive | Product discovery session → produce `epic.md` |
-| 6 | `6-break-down-epic.md` | One-shot | Decompose epic into task-graph + delivery.yaml + request shells |
-| 7 | `7-refine-epic-request.md` | Interactive | Refine a shell into a full request document + create Jira ticket |
-| 8 | `8-amend-epic.md` | Interactive | Amend an active epic — insert/split/remove/resequence tasks |
+Each workflow step has a corresponding **skill** (`.agents/skills/sdd-*`) and a **prompt file** (`user-development/prompts/`). Skills are the primary invocation mechanism — you simply state your intent in a fresh agent session and the agent loads the appropriate protocol. Prompt files remain as documentation and fallback for editors without skill support.
 
-**Interactive prompts** (3, 5, 7, 8) have a critical rule: the agent does NOT write any files until the human explicitly declares refinement complete.
+| # | Skill | Prompt File | Type | Purpose |
+|---|---|---|---|---|
+| 0 | — | `0-bootstrap-specs.md` | One-shot | Bootstrap `agent-specs/` for a new project |
+| 1 | `sdd-plan-task` | `1-plan-task.md` | One-shot | Generate a plan from an activated request |
+| 2 | `sdd-execute-plan` | `2-execute-plan.md` | One-shot | Execute an approved plan |
+| 3 | `sdd-create-request` | `3-create-request.md` | Interactive | Standalone request — technical discovery + write |
+| 4 | `sdd-quick-fix` | `4-quick-fix.md` | One-shot | Small change that skips the full pipeline |
+| 5 | `sdd-create-epic` | `5-create-epic.md` | Interactive | Product discovery session → produce `epic.md` |
+| 6 | `sdd-break-down-epic` | `6-break-down-epic.md` | One-shot | Decompose epic into task-graph + delivery.yaml + request shells |
+| 7 | `sdd-refine-request` | `7-refine-epic-request.md` | Interactive | Refine a shell into a full request document + create Jira ticket |
+| 8 | `sdd-amend-epic` | `8-amend-epic.md` | Interactive | Amend an active epic — insert/split/remove/resequence tasks |
+
+**How to invoke:** In a fresh agent session, describe what you want to do and reference the relevant file:
+- "Plan the task in `pending/3-add-notifications.md`" → agent loads `sdd-plan-task`
+- "Execute the plan in `plans/3-add-notifications/`" → agent loads `sdd-execute-plan`
+- "I want to add a feature for email reminders" → agent loads `sdd-create-request`
+
+**Interactive skills** (3, 5, 7, 8) have a critical rule: the agent does NOT write any files until the human explicitly declares refinement complete.
 
 ---
 
@@ -663,51 +669,49 @@ If a task changes user-facing behavior, the executing agent updates `README.md` 
 
 ### "I want to add a new feature"
 
-1. Open a new agent conversation.
-2. Paste `user-development/prompts/3-create-request.md`.
-3. Describe what you want. Answer discovery questions.
+1. Open a new agent session.
+2. Describe what you want — the agent loads the `sdd-create-request` skill.
+3. Answer discovery questions.
 4. Tell the agent to write it → creates a request in `pending/`.
 
 ### "I want to plan a large feature (multi-task)"
 
-1. **Prompt 5** (EM + Tech Lead) → interactive session → produces `epic.md` (status: `decomposed`)
-2. **Prompt 6** (Tech Lead) → agent produces `task-graph.md` + `delivery.yaml` + request shells
-3. **Prompt 7** per task (Tech Lead) → interactive refinement → full request (status: `refined`) + Jira ticket
+1. Describe the feature and provide the product brief → agent loads `sdd-create-epic` → produces `epic.md`
+2. Ask to break it down → agent loads `sdd-break-down-epic` → produces `task-graph.md` + `delivery.yaml` + request shells
+3. Per task: ask to refine the request → agent loads `sdd-refine-request` → full request + Jira ticket
 4. **Activate** → update request status to `activated`
-5. **Prompt 1** → plan produced (status: `pending-approval`)
-6. **Approve** → update approval fields in manifest.yaml
-7. **Prompt 2** → agent executes, creates branch + draft PR, commits progressively
+5. Ask to plan the task → agent loads `sdd-plan-task` → plan produced + branch + draft PR
+6. **Approve** → update approval fields in `manifest.yaml`
+7. Ask to execute the plan → agent loads `sdd-execute-plan` → commits progressively, marks PR ready
 8. Update `delivery.yaml` as PRs are created and merged
 
 ### "I need to change an active epic's scope"
 
-1. **Prompt 8** (Tech Lead) → interactive session → assess impact + propose changes
-2. Agent updates `task-graph.md`, `delivery.yaml`, and request files
-3. Agent creates new Jira tickets / updates existing ones (if MCP available)
-4. New tasks flow back into the normal pipeline: Refine → Activate → Plan → Execute
+1. Describe what changed and reference the epic → agent loads `sdd-amend-epic`
+2. Agent assesses impact, proposes changes — you confirm
+3. Agent updates `task-graph.md`, `delivery.yaml`, and request files
+4. Agent creates new Jira tickets / updates existing ones (if MCP available)
+5. New tasks flow back into the normal pipeline: Refine → Activate → Plan → Execute
 
 ### "I want to plan the next task"
 
-1. Open a new agent conversation.
-2. Paste `user-development/prompts/1-plan-task.md`.
-3. Reference the request in `pending/`.
-4. Agent creates plan folder in `plans/` with `approval.status: pending`.
-5. **Review `specification.md` and resolve all open questions.**
-6. Update `manifest.yaml`: set `approval.status: approved`.
+1. Open a new agent session.
+2. Reference the request: "Plan the task in `pending/3-add-notifications.md`"
+3. Agent loads `sdd-plan-task`, creates plan folder, branch, and draft PR.
+4. **Review `specification.md` and resolve all open questions.**
+5. Update `manifest.yaml`: set `approval.status: approved`.
 
 ### "I want to execute an approved plan"
 
-1. Open a new agent conversation.
-2. Paste `user-development/prompts/2-execute-plan.md`.
-3. Reference the plan folder in `plans/`.
-4. Agent verifies approval, creates branch, opens draft PR, executes stages.
+1. Open a new agent session on the feature branch.
+2. Reference the plan: "Execute the plan in `plans/3-add-notifications/`"
+3. Agent loads `sdd-execute-plan`, verifies approval, executes stages.
 
 ### "I want to make a small, obvious change"
 
-1. Open a new agent conversation.
-2. Paste `user-development/prompts/4-quick-fix.md`.
-3. Describe the change.
-4. Agent implements, verifies, creates log file. If too large → agent stops and recommends full pipeline.
+1. Open a new agent session.
+2. Describe the change — the agent loads `sdd-quick-fix`.
+3. Agent implements, verifies, creates log file. If too large → agent stops and recommends full pipeline.
 
 ### "I want to see what's in progress"
 

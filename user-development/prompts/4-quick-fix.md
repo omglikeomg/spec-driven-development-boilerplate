@@ -1,6 +1,10 @@
 # Prompt: Quick Fix
 
-> **Usage:** Copy this prompt into a new agent conversation. Replace `<CHANGE_DESCRIPTION>` with a plain-language description of the small change you need (e.g., "Extract the API base URL string used in 3 service files into a shared constant" or "Rename the `/books/list` endpoint to `/books`").
+> **Invocation:** In a fresh agent session, describe the small change you need. The agent will load the `sdd-quick-fix` skill automatically.
+>
+> **Example:** "Extract the API base URL string used in 3 service files into a shared constant"
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 

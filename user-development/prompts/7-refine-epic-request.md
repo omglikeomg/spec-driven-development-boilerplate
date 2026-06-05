@@ -1,6 +1,10 @@
 # Prompt: Refine an Epic Request (Interactive)
 
-> **Usage:** Copy this prompt into a new agent conversation. Provide the path to the request shell file you want to refine. The agent will guide you through a technical refinement session before writing the full request document and creating the Jira ticket.
+> **Invocation:** In a fresh agent session, ask to refine a specific request. The agent will load the `sdd-refine-request` skill automatically.
+>
+> **Example:** "Refine the request at `epics/active/1-awards/requests/3-migrate-component.md`"
+>
+> **Legacy usage:** This file can still be copy-pasted into an agent conversation as a fallback if skills are not available.
 
 ---
 

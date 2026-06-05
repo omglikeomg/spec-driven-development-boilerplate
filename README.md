@@ -27,6 +27,16 @@ No code is written without an approved plan. No plan is approved without human r
 sdd-boilerplate/
 ├── ADOPTION.md                         ← Start here if adopting into an existing repo
 ├── README.md                           ← You are here
+├── .agents/                            ← Agent skills (primary invocation mechanism)
+│   └── skills/
+│       ├── sdd-plan-task/              ← Plan a request → plan folder + branch + PR
+│       ├── sdd-execute-plan/           ← Execute an approved plan → code + PR ready
+│       ├── sdd-create-request/         ← Interactive standalone request creation
+│       ├── sdd-quick-fix/              ← Small change bypassing the pipeline
+│       ├── sdd-create-epic/            ← Interactive epic product discovery
+│       ├── sdd-break-down-epic/        ← Decompose epic into task graph
+│       ├── sdd-refine-request/         ← Refine epic request shell into full spec
+│       └── sdd-amend-epic/             ← Amend an active epic’s scope
 ├── bin/                                ← Agent CLI helper (bin/dev)
 │   ├── dev                             ← Main entry point (command dispatcher)
 │   ├── bootstrap.sh                    ← One-command setup for new projects
@@ -37,22 +47,16 @@ sdd-boilerplate/
 │   └── teams.yaml                      ← Jira, branching, co-author, conventions
 ├── agent-development/                  ← Agent-facing pipeline
 │   ├── agent-specs/                    ← Project context (read by every agent)
-│   │   ├── agent-instructions.md       ← Coding standards, dos/don'ts, naming, testing (customize for your stack)
-│   │   ├── agent-workflow.md           ← Execution rules, blast radius, commit timing, spec/doc updates (system-level, rarely customized)
+│   │   ├── agent-instructions.md       ← Coding standards, dos/don'ts, naming, testing
+│   │   ├── agent-workflow.md           ← Execution rules, blast radius, commit timing
 │   │   ├── application-overview.md     ← What the app does (replace with yours)
-│   │   ├── architecture-breakdown.md   ← Folder structure, patterns, tech stack, module deps (replace with yours)
-│   │   └── git-workflow.md             ← Branching, commit conventions, versioning (customize)
+│   │   ├── architecture-breakdown.md   ← Folder structure, patterns, tech stack
+│   │   └── git-workflow.md             ← Branching, commit conventions, versioning
 │   ├── pending/                        ← Task requests waiting to be planned
 │   │   └── _TEMPLATE-request.md
 │   ├── plans/                          ← All plan folders (status tracked in manifest.yaml)
-│   │   └── _templates/                 ← Templates for creating new plan folders
-│   │       ├── manifest.yaml           ← Task state, stages, approval tracking
-│   │       ├── specification.md        ← Human-readable plan overview
-│   │       └── stage.md               ← Per-stage instruction template
+│   │   └── _templates/
 │   └── done/                           ← Completed work (archive)
-│       ├── plans/                      ← Executed plan folders
-│       ├── requests/                   ← Fulfilled request files
-│       └── quick-fixes/                ← Quick fix log files (YYYYMMDD-description.md)
 │
 ├── epics/                              ← Strategic feature planning (Epic layer)
 │   ├── _templates/                     ← Epic, task-graph, and delivery templates
@@ -61,9 +65,10 @@ sdd-boilerplate/
 │
 └── user-development/                   ← Human-facing development assets
     ├── DEVELOPMENT-GUIDE.md            ← Full workflow documentation
+    ├── SQUAD_FLOW.md                   ← Team choreography (Figma/Jira/GitHub integration)
     ├── STATUS-REFERENCE.md             ← All status enums and transitions
     ├── PR_TEMPLATE.md                  ← PR description template
-    └── prompts/                        ← Copy-paste prompts for agent conversations
+    └── prompts/                        ← Protocol documentation & fallback prompts
         ├── 0-bootstrap-specs.md        ← "Bootstrap agent-specs/ for a new project"
         ├── 1-plan-task.md              ← "Plan this task request"
         ├── 2-execute-plan.md           ← "Execute this approved plan"
@@ -71,7 +76,8 @@ sdd-boilerplate/
         ├── 4-quick-fix.md              ← "Make a small, obvious change and log it"
         ├── 5-create-epic.md            ← "Interactive epic discovery session"
         ├── 6-break-down-epic.md        ← "Decompose epic into task graph"
-        └── 7-refine-epic-request.md    ← "Refine a shell into a full request"
+        ├── 7-refine-epic-request.md    ← "Refine a shell into a full request"
+        └── 8-amend-epic.md             ← "Amend an active epic's scope"
 ```
 
 ## Quick Start
@@ -144,7 +150,7 @@ This is your baseline. Everything from here on out goes through the pipeline.
 
 Option A — write it yourself using `agent-development/pending/_TEMPLATE-request.md` as a guide.
 
-Option B — paste the contents of `user-development/prompts/3-create-request.md` into an agent conversation and describe what you want. The agent will create a properly formatted request file in `pending/`.
+Option B — in a fresh agent session, describe what you want to build. The agent loads the `sdd-create-request` skill and guides you through interactive discovery before creating a properly formatted request file in `pending/`.
 
 > **Tip:** A good first task is whatever foundational setup your project needs — project initialization, directory structure, Docker infrastructure, CI pipeline, etc. Look at the example completed plan in `done/plans/0-project-bootstrapping/` for inspiration.
 
@@ -162,9 +168,9 @@ Follow the pipeline:
                    with stages       moves folder      updates manifest  in done/
 ```
 
-1. **Plan:** Paste `user-development/prompts/1-plan-task.md` into an agent conversation. Point it at your pending request.
+1. **Plan:** In a fresh agent session, say "Plan the task in `pending/N-your-task.md`". The agent loads `sdd-plan-task` and creates a plan folder, branch, and draft PR.
 2. **Approve:** Review the `specification.md` in the generated plan folder. Resolve any open questions. Set `approval.status: approved` in `manifest.yaml`.
-3. **Execute:** Paste `user-development/prompts/2-execute-plan.md` into a new agent conversation. Point it at the approved plan in `plans/`.
+3. **Execute:** In a new agent session on the feature branch, say "Execute the plan in `plans/N-your-task/`". The agent loads `sdd-execute-plan`, implements code, and marks the PR ready for review.
 
 For the full workflow documentation, read `user-development/DEVELOPMENT-GUIDE.md`.
 
@@ -295,10 +301,10 @@ In both cases, the check is never silently skipped — if no updates are needed,
 ## FAQ
 
 **Q: Does this work with [Cursor / Windsurf / Copilot / Claude / etc.]?**
-A: Yes. The prompts in `user-development/prompts/` are plain Markdown that you paste into any agent conversation. The workflow doesn't depend on any specific tool.
+A: Yes. The skills in `.agents/skills/` work natively with Zed. For other editors, the prompt files in `user-development/prompts/` are plain Markdown that can be copy-pasted into any agent conversation as a fallback. The workflow doesn't depend on any specific tool.
 
 **Q: Can I skip the planning step for small tasks?**
-A: For truly small, mechanically obvious changes (extracting a constant, renaming a route, fixing a typo), use the **quick fix track** — paste `user-development/prompts/4-quick-fix.md` into an agent conversation. It bypasses the full pipeline but still produces an audit trail in `agent-development/done/quick-fixes/`. For anything with design decisions or touching more than a few files, use the full pipeline — even small plans catch edge cases early.
+A: For truly small, mechanically obvious changes (extracting a constant, renaming a route, fixing a typo), use the **quick fix track** — describe the change in a fresh agent session and the `sdd-quick-fix` skill handles it. It bypasses the full pipeline but still produces an audit trail in `agent-development/done/quick-fixes/`. For anything with design decisions or touching more than a few files, use the full pipeline — even small plans catch edge cases early.
 
 **Q: How detailed should the agent-specs files be?**
 A: As detailed as possible without becoming stale. The example files show a good level of detail. When in doubt, be more specific — agents perform better with explicit constraints than with vague guidelines.
