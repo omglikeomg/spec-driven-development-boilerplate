@@ -1,0 +1,71 @@
+name: PR Lifecycle Automation
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, converted_to_draft]
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+  checks: write
+
+jobs:
+  detect-sdd:
+    runs-on: ubuntu-latest
+    outputs:
+      is_sdd: ${{ steps.check.outputs.is_sdd }}
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - id: check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/pr-lifecycle');
+            return await workflow.detectSddPR({ context, core });
+
+  label:
+    needs: detect-sdd
+    if: needs.detect-sdd.outputs.is_sdd == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Classify and label PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/pr-lifecycle');
+            return await workflow.classifyAndLabelPR({ github, context, core });
+
+      - name: Post lifecycle guidance comment
+        if: github.event.action == 'opened' || github.event.action == 'ready_for_review'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/pr-lifecycle');
+            return await workflow.postLifecycleGuidance({ github, context, core });
+
+  auto-ready:
+    needs: detect-sdd
+    if: needs.detect-sdd.outputs.is_sdd == 'true' && github.event.action == 'ready_for_review' && startsWith(github.event.pull_request.head.ref, 'plan/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Mark plan PR ready for review
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/pr-lifecycle');
+            return await workflow.markPlanPrReady({ github, context, core });

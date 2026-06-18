@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Plan Manifest — YAML Schema Reference (Format Version 2.0)
+# Plan Manifest — YAML Schema Reference
 # ─────────────────────────────────────────────────────────────────────────────
 # This file documents the expected structure of manifest.yaml.
 # It is NOT a JSON Schema — it's a human-readable reference showing:
@@ -8,14 +8,16 @@
 #   - Which fields are required vs optional
 #
 # Use this to validate manifests manually or to build tooling.
-#
-# ⚠️  Keep in sync with agent-development/plans/_templates/manifest.yaml
 # ─────────────────────────────────────────────────────────────────────────────
 
 _schema_version: "2.0"
 
 plan_metadata:
   _required: true
+  epic_id:
+    type: integer
+    required: true
+    description: "Parent epic ID (matches epics/active/<id>-*/)"
   task_id:
     type: integer
     required: true
@@ -25,6 +27,10 @@ plan_metadata:
     required: true
     description: "Must match request filename (kebab-case)"
     pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+  target_repo:
+    type: string
+    required: true
+    description: "Which repo this task executes in (must match repos.yaml key)"
   status:
     type: enum
     required: true
@@ -50,11 +56,6 @@ plan_metadata:
     type: date
     required: true
     format: "YYYY-MM-DD"
-  api_checkpoint:
-    type: boolean
-    required: false
-    default: false
-    description: "Inherited from request; true if any stage changes observable API behavior"
 
   approval:
     _required: true
@@ -89,6 +90,58 @@ dependencies:
     type: array
     items: string
     description: "Project modules this plan touches"
+
+stages:
+  _required: true
+  type: array
+  min_items: 1
+  items:
+    stage_id:
+      type: integer
+      required: true
+    name:
+      type: string
+      required: true
+    description:
+      type: string
+      required: true
+    instruction_file:
+      type: string
+      required: true
+      pattern: "^\\d+-[a-z0-9-]+\\.md$"
+    status:
+      type: enum
+      required: true
+      values: [todo, in-progress, done, skipped, failed]
+    complexity:
+      type: enum
+      required: true
+      values: [1, 2, 3, 5, 8]
+      description: "Fibonacci — stage-level (13 is too large for a stage)"
+    context_files:
+      type: array
+      items: string
+      required: true
+      description: "Files the agent must read before starting"
+    output_files:
+      type: array
+      items: string
+      required: true
+      description: "Files the agent will create or modify"
+    verification_commands:
+      type: array
+      items: string
+      required: true
+      description: "Commands to run after completion (can be empty)"
+    rollback_plan:
+      type: string
+      required: true
+      description: "Steps to undo this stage if it fails"
+    api_checkpoint:
+      type: boolean
+      required: false
+      default: false
+      description: "true if this stage changes observable API behavior (pauses for human verification)"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Dependency Mapping (v2.0 — optional)
@@ -138,58 +191,6 @@ delivery:
     required: false
     values: [planned, branched, draft-pr, in-progress, ready-for-review, merged]
 
-stages:
-  _required: true
-  type: array
-  min_items: 1
-  items:
-    stage_id:
-      type: integer
-      required: true
-    name:
-      type: string
-      required: true
-    description:
-      type: string
-      required: true
-    instruction_file:
-      type: string
-      required: true
-      pattern: "^\\d+-[a-z0-9-]+\\.md$"
-    status:
-      type: enum
-      required: true
-      values: [todo, in-progress, done, skipped, failed]
-    complexity:
-      type: enum
-      required: true
-      values: [1, 2, 3, 5, 8]
-      description: "Fibonacci — stage-level (13 is too large for a stage)"
-    api_checkpoint:
-      type: boolean
-      required: false
-      default: false
-      description: "true if this stage changes observable API behavior (pauses for human verification)"
-    context_files:
-      type: array
-      items: string
-      required: true
-      description: "Files the agent must read before starting"
-    output_files:
-      type: array
-      items: string
-      required: true
-      description: "Files the agent will create or modify"
-    verification_commands:
-      type: array
-      items: string
-      required: true
-      description: "Commands to run after completion (can be empty)"
-    rollback_plan:
-      type: string
-      required: true
-      description: "Steps to undo this stage if it fails"
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Valid Status Transitions
 # ─────────────────────────────────────────────────────────────────────────────
@@ -208,6 +209,13 @@ _transitions:
     changes-requested: [pending, approved]
     approved: []  # terminal (unless plan is reset to draft)
 
+  stages[].status:
+    todo: [in-progress, skipped]
+    in-progress: [done, failed, skipped]
+    done: []      # terminal
+    skipped: []   # terminal
+    failed: []    # terminal
+
   delivery.pr_status:
     planned: [branched]
     branched: [draft-pr]
@@ -215,10 +223,3 @@ _transitions:
     in-progress: [ready-for-review]
     ready-for-review: [merged]
     merged: []  # terminal
-
-  stages[].status:
-    todo: [in-progress, skipped]
-    in-progress: [done, failed, skipped]
-    done: []      # terminal
-    skipped: []   # terminal
-    failed: []    # terminal

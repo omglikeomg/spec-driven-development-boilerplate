@@ -1,0 +1,122 @@
+name: Guardrails
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  detect-sdd:
+    runs-on: ubuntu-latest
+    outputs:
+      is_sdd: ${{ steps.check.outputs.is_sdd }}
+      branch_type: ${{ steps.check.outputs.branch_type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - id: check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/guardrails');
+            return await workflow.detectSddStep({ context, core });
+
+  branch-naming:
+    runs-on: ubuntu-latest
+    needs: detect-sdd
+    if: needs.detect-sdd.outputs.is_sdd == 'true'
+    outputs:
+      branch_type: ${{ steps.check.outputs.branch_type }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check branch naming
+        id: check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/guardrails');
+            return await workflow.checkBranchNaming({ github, context, core });
+
+  cross-reference:
+    runs-on: ubuntu-latest
+    needs: detect-sdd
+    if: needs.detect-sdd.outputs.is_sdd == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check cross-references
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/guardrails');
+            return await workflow.checkCrossReferences({ github, context, core });
+
+  blast-radius:
+    runs-on: ubuntu-latest
+    needs: detect-sdd
+    if: needs.detect-sdd.outputs.is_sdd == 'true' && (needs.detect-sdd.outputs.branch_type == 'plan' || needs.detect-sdd.outputs.branch_type == 'execution')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Check blast radius
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/guardrails');
+            return await workflow.checkBlastRadius({ github, context, core });
+
+  title-convention:
+    runs-on: ubuntu-latest
+    needs: detect-sdd
+    if: needs.detect-sdd.outputs.is_sdd == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PR title
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/guardrails');
+            return await workflow.checkTitleConvention({ github, context });
+
+  checklist:
+    runs-on: ubuntu-latest
+    needs: detect-sdd
+    if: needs.detect-sdd.outputs.is_sdd == 'true' && needs.detect-sdd.outputs.branch_type == 'plan'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Validate quality checklist
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/guardrails');
+            return await workflow.checkQualityChecklist({ github, context });

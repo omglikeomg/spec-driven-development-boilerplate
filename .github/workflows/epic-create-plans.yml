@@ -1,0 +1,101 @@
+name: Epic Auto-Create Plans
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: epic-create-plans-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  create_plan_prs:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'epic/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+
+      - name: Discover epic context
+        id: discover
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/epic-create-plans');
+            return await workflow.discoverEpicContext({ context, core });
+
+      - name: Read task graph
+        id: tasks
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/epic-create-plans');
+            return await workflow.readTaskGraph({ core, inputs: { epicDir: process.env.EPIC_DIR } });
+        env:
+          EPIC_DIR: ${{ steps.discover.outputs.epic_dir }}
+
+      - name: Create plan branches and PRs
+        id: create_plans
+        uses: actions/github-script@v7
+        env:
+          ALL_TASKS: ${{ steps.tasks.outputs.all_tasks }}
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+          EPIC_DIR: ${{ steps.discover.outputs.epic_dir }}
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/epic-create-plans');
+            const results = await workflow.createPlanBranchesAndPrs({
+              github,
+              context,
+              core,
+              inputs: {
+                epicId: process.env.EPIC_ID,
+                epicDir: process.env.EPIC_DIR,
+              },
+            });
+            core.setOutput('results', JSON.stringify(results));
+
+      - name: Commit tracking updates
+        run: |
+          if git diff --quiet; then
+            echo "No tracking changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add epics
+          git commit -m "chore(epic): record plan PRs for ${{ steps.discover.outputs.epic_id }}"
+          git push origin main
+
+      - name: Comment on epic PR
+        uses: actions/github-script@v7
+        env:
+          RESULTS_JSON: ${{ steps.create_plans.outputs.results }}
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/epic-create-plans');
+            return await workflow.commentOnEpic({
+              github,
+              context,
+              inputs: {
+                resultsJson: process.env.RESULTS_JSON,
+                epicId: process.env.EPIC_ID,
+              },
+            });

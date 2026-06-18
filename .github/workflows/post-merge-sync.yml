@@ -1,0 +1,138 @@
+name: Post-Merge Sync
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: post-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Determine PR type and extract context
+        id: context
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/post-merge-sync');
+            return await workflow.determinePrTypeAndExtractContext({ context, core });
+
+      - name: Sync plan branch merge
+        if: steps.context.outputs.is_plan_branch == 'true'
+        env:
+          EPIC_ID: ${{ steps.context.outputs.epic_id }}
+          TASK_ID: ${{ steps.context.outputs.task_id }}
+        run: |
+          if [ -z "$EPIC_ID" ] || [ -z "$TASK_ID" ]; then
+            echo "Skipping: missing epic or task ID from PR context."
+            exit 0
+          fi
+
+          echo "Plan branch merged. Syncing hub tracking state..."
+          node bin/sync-state.js update-task "$EPIC_ID" "$TASK_ID" done
+          node bin/sync-state.js update-pr "$EPIC_ID" "$TASK_ID" merged
+
+          if git diff --quiet; then
+            echo "No tracking changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add epics agent-development fallback-sdd .sdd-audit
+          git commit -m "chore(sync): mark task $TASK_ID done and delivery merged"
+          git pull --rebase origin "${{ github.event.repository.default_branch }}"
+          git push origin "HEAD:${{ github.event.repository.default_branch }}"
+
+      - name: Sync epic branch merge
+        if: steps.context.outputs.is_epic_branch == 'true'
+        env:
+          EPIC_ID: ${{ steps.context.outputs.epic_id }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/post-merge-sync');
+            return await workflow.syncEpicBranchMerge({
+              context,
+              core,
+              inputs: {
+                epicId: process.env.EPIC_ID,
+              },
+            });
+
+      - name: Sync execution branch merge (target repo PR)
+        if: steps.context.outputs.is_execution_branch == 'true' && steps.context.outputs.hub_pr_ref != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/post-merge-sync');
+            return await workflow.notifyHubOfExecutionMerge({
+              github,
+              context,
+              inputs: {
+                hubPrRef: '${{ steps.context.outputs.hub_pr_ref }}',
+              },
+            });
+
+      - name: Transition Jira ticket (optional)
+        if: steps.context.outputs.is_epic_branch != 'true' && steps.context.outputs.epic_id != '' && steps.context.outputs.task_id != ''
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/post-merge-sync');
+            return await workflow.transitionJiraTicket({
+              context,
+              inputs: {
+                epicId: '${{ steps.context.outputs.epic_id }}',
+                taskId: '${{ steps.context.outputs.task_id }}'
+              },
+            });
+
+      - name: Check epic completion
+        id: completion
+        env:
+          EPIC_ID: ${{ steps.context.outputs.epic_id }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/post-merge-sync');
+            return await workflow.checkEpicCompletion({
+              core,
+              inputs: {
+                epicId: process.env.EPIC_ID,
+              },
+            });
+
+      - name: Archive epic if complete
+        if: steps.completion.outputs.complete == 'true'
+        env:
+          EPIC_ID: ${{ steps.context.outputs.epic_id }}
+        run: |
+          echo "All tasks done and all PRs merged. Triggering epic completion..."
+          "$GITHUB_WORKSPACE"/bin/commands/wf-archive.sh "$EPIC_ID" || echo "Archive failed — manual check needed."

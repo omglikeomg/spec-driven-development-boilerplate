@@ -1,0 +1,213 @@
+name: Plan Execution Trigger
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      plan_branch:
+        description: "Plan branch that was merged (e.g. plan/1_task-name)"
+        required: true
+        type: string
+      pr_number:
+        description: "Merged PR number"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+
+concurrency:
+  group: plan-execution-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'plan/')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.plan_branch, 'plan/'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Generate correlation ID
+        id: audit
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/plan-execution-trigger');
+            return await workflow.generateCorrelationStep({ context, core });
+
+      - name: Discover plan context
+        id: discover
+        env:
+          INPUT_PLAN_BRANCH: ${{ github.event.inputs.plan_branch }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/plan-execution-trigger');
+            return await workflow.discoverPlanContext({ context, core });
+
+      - name: Validate plan for safety gates
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/plan-execution-trigger');
+            return await workflow.validatePlanForSafetyGates({
+              core,
+              inputs: {
+                planDir: process.env.PLAN_DIR,
+                epicId: process.env.EPIC_ID,
+                taskId: process.env.TASK_ID,
+              },
+            });
+        env:
+          PLAN_DIR: ${{ steps.discover.outputs.plan_dir }}
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+          TASK_ID: ${{ steps.discover.outputs.task_id }}
+
+      - name: Mark task status → planned on approval
+        env:
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+          TASK_ID: ${{ steps.discover.outputs.task_id }}
+        run: |
+          echo "Setting task status to 'planned' on plan PR approval..."
+          node bin/sync-state.js update-task "$EPIC_ID" "$TASK_ID" planned
+
+      - name: Mark task activated and delivery branched
+        env:
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+          TASK_ID: ${{ steps.discover.outputs.task_id }}
+          EXECUTION_BRANCH: ${{ steps.discover.outputs.execution_branch }}
+        run: |
+          node bin/sync-state.js record-pr "$EPIC_ID" "$TASK_ID" --branch="$EXECUTION_BRANCH" --status=branched
+
+      - name: Run pre-dispatch artifact analysis
+        env:
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+        run: |
+          echo "Running cross-artifact analysis for epic $EPIC_ID..."
+          node bin/sync-state.js analyze "$EPIC_ID" || {
+            echo ""
+            echo "Artifact analysis found issues. Review the output above."
+            echo "The dispatch will proceed, but fix these issues before execution."
+          }
+
+      - name: Generate quality checklist
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/plan-execution-trigger');
+            return await workflow.generateQualityChecklist({
+              inputs: {
+                manifestPath: process.env.MANIFEST_PATH,
+                taskName: process.env.TASK_NAME,
+              },
+            });
+        env:
+          MANIFEST_PATH: ${{ steps.discover.outputs.manifest_path }}
+          TASK_NAME: ${{ steps.discover.outputs.task_name }}
+
+      - name: Dispatch task to target repo
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/plan-execution-trigger');
+            return await workflow.dispatchTaskToTargetRepo({
+              github,
+              context,
+              inputs: {
+                targetRepoFullName: process.env.TARGET_REPO_FULL_NAME,
+                correlationId: process.env.CORRELATION_ID,
+                epicId: process.env.EPIC_ID,
+                taskId: process.env.TASK_ID,
+                taskName: process.env.TASK_NAME,
+                planBranch: process.env.PLAN_BRANCH,
+                planPrNumber: process.env.PLAN_PR_NUMBER,
+                planDir: process.env.PLAN_DIR,
+                executionBranch: process.env.EXECUTION_BRANCH,
+              },
+            });
+        env:
+          TARGET_REPO_FULL_NAME: ${{ steps.discover.outputs.target_repo_full_name }}
+          CORRELATION_ID: ${{ steps.audit.outputs.correlation_id }}
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+          TASK_ID: ${{ steps.discover.outputs.task_id }}
+          TASK_NAME: ${{ steps.discover.outputs.task_name }}
+          PLAN_BRANCH: ${{ steps.discover.outputs.branch_ref }}
+          PLAN_PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          PLAN_DIR: ${{ steps.discover.outputs.plan_dir }}
+          EXECUTION_BRANCH: ${{ steps.discover.outputs.execution_branch }}
+
+      - name: Commit plan tracking updates
+        run: |
+          if git diff --quiet; then
+            echo "No tracking changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add epics agent-development fallback-sdd .sdd-audit
+          git commit -m "chore(plan): dispatch task ${{ steps.discover.outputs.task_id }}"
+          git pull --rebase origin ${{ github.event.repository.default_branch }}
+          git push origin HEAD:${{ github.event.repository.default_branch }}
+
+      - name: Comment on plan PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/plan-execution-trigger');
+            return await workflow.commentOnPlan({
+              github,
+              context,
+              inputs: {
+                taskId: process.env.TASK_ID,
+                taskName: process.env.TASK_NAME,
+                targetRepoFullName: process.env.TARGET_REPO_FULL_NAME,
+                executionBranch: process.env.EXECUTION_BRANCH,
+                correlationId: process.env.CORRELATION_ID,
+                prNumber: process.env.PLAN_PR_NUMBER,
+              },
+            });
+        env:
+          TARGET_REPO_FULL_NAME: ${{ steps.discover.outputs.target_repo_full_name }}
+          TASK_ID: ${{ steps.discover.outputs.task_id }}
+          TASK_NAME: ${{ steps.discover.outputs.task_name }}
+          EXECUTION_BRANCH: ${{ steps.discover.outputs.execution_branch }}
+          CORRELATION_ID: ${{ steps.audit.outputs.correlation_id }}
+          PLAN_PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+
+      - name: Audit workflow end
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/plan-execution-trigger');
+            return await workflow.endAudit({
+              inputs: {
+                correlationId: process.env.CORRELATION_ID,
+                epicId: process.env.EPIC_ID,
+                taskId: process.env.TASK_ID,
+              },
+              jobStatus: '${{ job.status }}',
+            });
+        env:
+          CORRELATION_ID: ${{ steps.audit.outputs.correlation_id }}
+          EPIC_ID: ${{ steps.discover.outputs.epic_id }}
+          TASK_ID: ${{ steps.discover.outputs.task_id }}

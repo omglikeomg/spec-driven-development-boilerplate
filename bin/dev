@@ -91,6 +91,8 @@ MULTIREPO (Hub Coordination):
   repo:enter <name>             Print context for working in a repo
   repo:migrate <name>           Move fallback-sdd/ into child repo
   dispatch <epic-id> <task-id>  Dispatch task request to target repo
+  replay-dispatch <epic-id> <task-id>
+                                Re-send a missed task-assigned dispatch
   status [epic-id]              Cross-repo epic status dashboard
   resolve-spec <type> <repo>    Find spec file via cascade resolution
 

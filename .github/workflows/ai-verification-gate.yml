@@ -1,0 +1,80 @@
+name: AI Verification Gate
+
+on:
+  repository_dispatch:
+    types: [verify-pr]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: write
+  models: read
+
+concurrency:
+  group: ai-verification-${{ github.event.client_payload.repository }}-${{ github.event.client_payload.pr_number }}
+  cancel-in-progress: false
+
+env:
+  MAX_CONTEXT_CHARS: 8000
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout hub repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deterministic pre-check
+        id: precheck
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/ai-verification-gate');
+            return await workflow.runPrecheck({ github, context, core });
+
+      - name: Post verification skipped comment
+        if: steps.precheck.outputs.skip == 'true' && steps.precheck.outputs.config_only != 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/ai-verification-gate');
+            return await workflow.postSkipComment({
+              github, core,
+              inputs: {
+                childOwner: '${{ steps.precheck.outputs.child_owner }}',
+                childRepo: '${{ steps.precheck.outputs.child_repo }}',
+                prNumber: '${{ steps.precheck.outputs.pr_number }}',
+                reason: '${{ steps.precheck.outputs.reason }}',
+              },
+            });
+
+      - name: AI verification
+        id: ai-verify
+        if: steps.precheck.outputs.skip != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/ai-verification-gate');
+            return await workflow.runAiVerification({
+              github, context, core,
+              inputs: {
+                childOwner: '${{ steps.precheck.outputs.child_owner }}',
+                childRepo: '${{ steps.precheck.outputs.child_repo }}',
+                prNumber: '${{ steps.precheck.outputs.pr_number }}',
+                epicId: '${{ steps.precheck.outputs.epic_id }}',
+                taskId: '${{ steps.precheck.outputs.task_id }}',
+                planManifest: '${{ steps.precheck.outputs.plan_manifest }}',
+                branch: '${{ steps.precheck.outputs.branch }}',
+                blastRadiusIssue: '${{ steps.precheck.outputs.blast_radius_issue }}',
+                unexpectedFiles: '${{ steps.precheck.outputs.unexpected_files }}',
+                declaredFiles: '${{ steps.precheck.outputs.declared_files }}',
+              },
+            });

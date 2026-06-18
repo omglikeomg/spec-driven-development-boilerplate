@@ -72,6 +72,14 @@ git commit -m "chore: scaffold multirepo hub for <domain-name>"
 
 Use Prompt 5 (`5-create-epic.md`) to define your first cross-repo epic.
 
+## Day-to-day developer flow
+
+1. Keep repo-specific behavior in `bin/workflow-scripts/` or `bin/sync-state/`.
+2. Keep GitHub Actions YAML thin — it should wire inputs, not hold business logic.
+3. Use `docs/WORKFLOW-REFERENCE.md` when you need lifecycle or recovery details.
+4. Use `docs/BEST-PRACTICES.md` when deciding whether code belongs in YAML or a module.
+5. Use `docs/FIRST-TIME-SETUP.md` when you need the exact `gh` commands for secrets and variables.
+
 ## Repository Structure
 
 ```
@@ -100,6 +108,7 @@ hub/
 ├── architectural-schemas/         ← System topology diagrams
 │
 ├── bin/dev                        ← Hub CLI (coordination commands)
+├── bin/workflow-scripts/          ← Thin workflow adapters + shared helpers
 ├── user-development/              ← Prompts and human guides
 │
 ├── AGENTS.md                      ← Rules for AI coding agents
@@ -126,6 +135,11 @@ When an agent needs context:
 2. **Repo-level specs** (repo's own `sdd/` or hub's `fallback-sdd/`)
 3. **Hub documentation** (`documentation/`, `contracts/`, `architectural-schemas/`)
 4. **Common specs** (`common-specs/` — universal conventions)
+
+### DX rule of thumb
+
+- If a GitHub Actions step contains real branching, parsing, or validation, move it into `bin/workflow-scripts/` and keep the workflow step as a wrapper.
+- If the logic is reused outside workflows, move it into `bin/sync-state/` and add/extend tests.
 
 ### The Sync Rule
 

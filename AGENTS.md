@@ -24,6 +24,7 @@ Each managed repo is a git submodule under `repos/`.
 | `contracts/` | Cross-service interface specs (API schemas, event definitions) |
 | `architectural-schemas/` | System-level topology diagrams |
 | `bin/` | Hub CLI commands (coordination, not build/test) |
+| `bin/workflow-scripts/` | Extracted GitHub Actions logic and shared workflow helpers |
 
 ---
 
@@ -129,6 +130,7 @@ Use for coordination work (planning, dispatching, status):
 | `bin/dev wf:validate` | Validate YAML manifests |
 | `bin/dev resolve-spec <type> <repo>` | Find spec via cascade |
 | `bin/dev note "msg"` | Record a finding |
+| `bin/dev install-workflows <repo>` | Install caller workflows in a target repo for hub automation |
 
 ### Repo-Level (inside `repos/<name>/`)
 
@@ -150,6 +152,8 @@ Common repo-level commands: `build`, `test`, `lint`, `verify`, `branch`, `pr:dra
 5. **Always sync after completing a task.** Follow the Sync Rule above.
 6. **Source code is the source of truth.** If code contradicts a spec, code wins.
 7. **No code without an approved plan.** Use the Quick Fix track only for trivial (1-3 file) changes.
+8. **Guardrails advise, humans decide.** All automated checks (branch naming, cross-references, blast radius, verification) are advisory. They never block merges.
+9. **Keep YAML thin.** If a workflow step contains parsing, branching, validation, or repeated logic, move it into `bin/workflow-scripts/` or `bin/sync-state/` and cover it with tests.
 
 ---
 
@@ -175,7 +179,6 @@ Skills are invoked naturally in Zed and Claude Code — describe what you want a
 |-------|-------------|------|
 | `sdd-bootstrap-hub` | Initialize hub context — generate overview docs, commands config, and fallback-sdd structures for registered repos | Coordination |
 | `sdd-plan-task` | Create an implementation plan from an activated task request — produces `manifest.yaml`, `specification.md`, and stage files | Execution |
-| `sdd-approve-plan` | Stamp a plan as approved — verifies no PENDING markers remain, sets approval fields in manifest.yaml, and transitions task-graph status | Execution |
 | `sdd-execute-plan` | Execute an approved plan — creates branch, opens draft PR, runs stages with verification checkpoints | Execution |
 | `sdd-create-request` | Interactive technical discovery → write a standalone task request (no epic needed) | Coordination |
 | `sdd-quick-fix` | Implement a small, obvious change (1–3 files, no design decisions) without a full plan | Execution |
@@ -185,8 +188,48 @@ Skills are invoked naturally in Zed and Claude Code — describe what you want a
 | `sdd-dispatch-tasks` | Dispatch refined tasks to target repos and update statuses to `activated` | Coordination |
 | `sdd-amend-epic` | Interactively amend an in-flight epic — add, split, remove, or resequence tasks | Coordination |
 | `sdd-retro-analysis` | Retrospective analysis on completed epic metrics — talking points + process recommendations | Coordination |
-| `sdd-slim-docs` | Apply the "what can't code answer?" conciseness pass to any documentation folder — produces a human-approved cut plan then executes | Coordination |
 
 **Skill files:** `.agents/skills/<name>/SKILL.md`
 **VS Code aliases:** `.github/prompts/<name>.prompt.md`
 **Copy-paste fallback:** `user-development/prompts/`
+
+---
+
+## Guardrails
+
+Automation enforces these guardrails as **advisory checks only** (never blocking):
+
+| Guardrail | Enforced by | Behavior |
+|-----------|-------------|----------|
+| Branch naming | `guardrails.yml`, `validate.yml` | Warns if branch doesn't match expected patterns |
+| PR cross-references | `guardrails.yml`, `pr-lifecycle.yml` | Warns if plan/execution PRs are missing hub-target links |
+| Blast radius (deterministic) | `guardrails.yml` | Warns if changed files are outside plan-scope paths |
+| Blast radius (AI-assisted) | `ai-verification-gate.yml` | AI compares diff against manifest-declared scope |
+| Title conventions | `guardrails.yml` | Warns if PR title doesn't follow conventional commit |
+| Status transitions | `target-status-events.yml` | Rejects invalid transitions; logs reason |
+
+## Automation Architecture
+
+See `common-specs/git-workflow.md` for the full automation reference. Key components:
+
+- **9 workflows** in `.github/workflows/` covering validation, ticket creation, dispatch, verification, post-merge sync, lifecycle, status events, completion, and guardrails
+- **2 reusable workflows** (`receive-task.yml`, `notify-hub-verification.yml`) that target repos call via `uses:`
+- **Sync-state engine** (`bin/sync-state.js`) with 11 commands for programmatic manifest updates
+- **Install command** (`bin/dev install-workflows <repo>`) to bootstrap target repos with caller workflows
+
+### Enterprise Features
+
+| Feature | Implementation |
+|---------|---------------|
+| Error taxonomy | `bin/sync-state/errors.js` — 18 structured error codes (SDD-001 through SDD-018) across 5 categories |
+| Audit trail | `.sdd-audit/` — JSONL audit log with correlation IDs for tracing dispatch chains |
+| Integrity tokens | HMAC-SHA256 tokens on all `repository_dispatch` events, verified on receipt |
+| Preflight checks | `.github/workflows/preflight-check.yml` — validates config, secrets, and branch naming as check runs |
+| Backup before mutation | `--backup` flag on all sync-state write commands creates `.bak` files before changes |
+| Check run guardrails | All guardrails post results as check runs (visible in branch protection UI), not just PR comments |
+| Least-privilege permissions | Each workflow scoped to minimum required permissions |
+| Quality checklists | `bin/sync-state/checklist.js` — per-plan-stage checklists generated and validated automatically |
+| Cross-artifact analysis | `bin/sync-state/analyze.js` — validates spec ↔ tasks ↔ delivery consistency before dispatch |
+| Constitution template | `agent-development/agent-specs/constitution-template.md` — engineering principles per managed repo |
+| Troubleshooting runbook | `docs/TROUBLESHOOTING.md` — per-error-code resolution steps |
+| Workflow reference | `docs/WORKFLOW-REFERENCE.md` — detailed workflow catalog with setup and trigger docs |

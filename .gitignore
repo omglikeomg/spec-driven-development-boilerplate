@@ -1,6 +1,7 @@
 # SDD runtime files (not committed)
 .agent-audit-log
 .agent-notes-local
+.sdd-audit/*.jsonl
 
 # OS files
 .DS_Store

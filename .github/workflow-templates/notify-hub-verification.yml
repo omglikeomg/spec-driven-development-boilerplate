@@ -1,0 +1,29 @@
+# Target repo caller for the hub's notify-hub-verification reusable workflow.
+# Copy this file to your target repo's .github/workflows/ directory.
+# Replace YOUR-HUB-ORG/YOUR-HUB-REPO with your actual hub repo path.
+#
+# Prerequisites:
+#   1. Set HUB_REPO variable in repo settings (org/hub-repo-name) — used in `hub_repo:` input
+#   2. Set HUB_CROSS_REPO_TOKEN secret (PAT with repo+workflow scope)
+#   3. The hub must have .github/workflows/notify-hub-verification.yml as a reusable workflow
+
+name: Notify Hub Verification
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  call-notify:
+    if: startsWith(github.event.pull_request.head.ref, 'feat/') || startsWith(github.event.pull_request.head.ref, 'fix/') || startsWith(github.event.pull_request.head.ref, 'chore/') || startsWith(github.event.pull_request.head.ref, 'refactor/') || startsWith(github.event.pull_request.head.ref, 'docs/') || startsWith(github.event.pull_request.head.ref, 'ci/')
+    uses: ecarrizo2/spec-driven-development-boilerplate/.github/workflows/notify-hub-verification.yml@main
+    with:
+      hub_repo: ecarrizo2/spec-driven-development-boilerplate
+    secrets:
+      HUB_CROSS_REPO_TOKEN: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+      HUB_INTEGRITY_SECRET: ${{ secrets.HUB_INTEGRITY_SECRET }}

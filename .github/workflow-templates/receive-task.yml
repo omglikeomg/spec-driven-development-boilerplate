@@ -1,0 +1,33 @@
+# Target repo caller for the hub's receive-task reusable workflow.
+# Copy this file to your target repo's .github/workflows/ directory.
+# Replace YOUR-HUB-ORG/YOUR-HUB-REPO with your actual hub repo path.
+#
+# Prerequisites:
+#   1. Set HUB_REPO variable in repo settings (org/hub-repo-name) — used in `hub_repo:` input
+#   2. Set HUB_CROSS_REPO_TOKEN secret (PAT with repo+workflow scope)
+#   3. The hub must have .github/workflows/receive-task.yml as a reusable workflow
+
+name: Receive SDD Task
+
+on:
+  repository_dispatch:
+    types: [task-assigned]
+
+permissions:
+  contents: read
+
+jobs:
+  call-receive-task:
+    uses: ecarrizo2/spec-driven-development-boilerplate/.github/workflows/receive-task.yml@main
+    with:
+      epic_id: ${{ github.event.client_payload.epic_id }}
+      task_id: ${{ github.event.client_payload.task_id }}
+      task_name: ${{ github.event.client_payload.task_name }}
+      hub_repo: ${{ github.event.client_payload.hub_repo }}
+      hub_plan_branch: ${{ github.event.client_payload.plan_branch }}
+      hub_plan_pr: ${{ github.event.client_payload.plan_pr_number }}
+      execution_branch: ${{ github.event.client_payload.execution_branch }}
+      plan_dir: ${{ github.event.client_payload.plan_dir }}
+    secrets:
+      HUB_CROSS_REPO_TOKEN: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+      HUB_INTEGRITY_SECRET: ${{ secrets.HUB_INTEGRITY_SECRET }}

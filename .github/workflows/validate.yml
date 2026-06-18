@@ -3,27 +3,59 @@ name: Hub Validation
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
-    branches: [main]
+    branches: ['**']
 
 jobs:
   validate:
-    # Skip draft PRs
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    name: YAML & Frontmatter Validation
+    name: YAML, Frontmatter & Schema Validation
+    outputs:
+      is_sdd: ${{ steps.detect.outputs.is_sdd }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install validation dependencies
-        working-directory: bin/validate
-        run: npm ci
+      - name: Validate YAML and frontmatter
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/validate');
+            return await workflow.validateYamlAndFrontmatter({ github, context, core });
 
-      - name: Run validation
-        run: node bin/validate/index.js
+      - name: Detect SDD context
+        id: detect
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/validate');
+            return await workflow.detectSddContextStep({ context, core });
+
+      - name: Validate branch naming on PR
+        if: always() && steps.detect.outputs.is_sdd == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/validate');
+            return await workflow.validateBranchNamingOnPR({ context, core });
+
+      - name: Validate cross-references on hub PRs
+        if: always() && (startsWith(github.event.pull_request.head.ref, 'plan/') || startsWith(github.event.pull_request.head.ref, 'epic/'))
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/validate');
+            return await workflow.validateCrossReferencesOnHubPRs({ context, core });

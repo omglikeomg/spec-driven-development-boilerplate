@@ -15,6 +15,7 @@ tasks:
     target_branch: null         # Override repo's default main branch (null = use default from repos.yaml)
     request_file: "requests/1-name.md"
     jira_ticket: null           # e.g., PROJ-54368 — filled after ticket creation
+    gh_issue: null              # GitHub issue number or URL, if created
     depends_on: []              # Task IDs this task depends on (can be cross-repo)
     blocks: []                  # Task IDs that depend on this task
     status: draft               # draft | refined | activated | planned | approved | in-progress | blocked | done | skipped

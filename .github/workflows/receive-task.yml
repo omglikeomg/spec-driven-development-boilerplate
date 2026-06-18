@@ -1,0 +1,156 @@
+name: Receive SDD Task
+
+on:
+  workflow_call:
+    inputs:
+      epic_id:
+        required: true
+        type: string
+      task_id:
+        required: true
+        type: string
+      task_name:
+        required: true
+        type: string
+      hub_repo:
+        required: true
+        type: string
+      hub_plan_branch:
+        required: true
+        type: string
+      hub_plan_pr:
+        required: true
+        type: string
+      execution_branch:
+        required: true
+        type: string
+      plan_dir:
+        required: false
+        type: string
+        default: ''
+    secrets:
+      HUB_CROSS_REPO_TOKEN:
+        required: true
+      HUB_INTEGRITY_SECRET:
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  receive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout hub repo (for SDD modules)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.hub_repo }}
+          token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          path: .sdd-hub
+
+      - name: Verify integrity token
+        uses: actions/github-script@v7
+        env:
+          RUN_ID: ${{ github.run_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require(`${process.env.GITHUB_WORKSPACE}/.sdd-hub/bin/workflow-scripts/receive-task`);
+            return await workflow.verifyIntegrityTokenStep({
+              context,
+              core,
+              inputs: {
+                runId: process.env.RUN_ID,
+                epicId: '${{ inputs.epic_id }}',
+                taskId: '${{ inputs.task_id }}',
+              },
+            });
+
+      - name: Create execution branch
+        env:
+          EXECUTION_BRANCH: ${{ inputs.execution_branch }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch || 'main' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Delete stale remote branch if it exists from a previous run
+          git push origin --delete "${EXECUTION_BRANCH}" 2>/dev/null || true
+
+          git checkout -b "${EXECUTION_BRANCH}" "origin/${BASE_BRANCH}"
+          git push origin HEAD:"${EXECUTION_BRANCH}"
+
+      # DEV BOT INTEGRATION POINT (code synthesis):
+      # Same mechanism as plan-agent-pickup.yml — calls GitHub Models API (openai/gpt-4o)
+      # to generate implementation files from the plan, then commits them to the branch.
+      # Replace the MODEL_URL / MODEL_NAME / fetch call if you use a different AI provider.
+      - name: Synthesize implementation with AI
+        id: ai_code
+        env:
+          EPIC_ID: ${{ inputs.epic_id }}
+          TASK_ID: ${{ inputs.task_id }}
+          TASK_NAME: ${{ inputs.task_name }}
+          EXECUTION_BRANCH: ${{ inputs.execution_branch }}
+          HUB_CROSS_REPO_TOKEN: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require(`${process.env.GITHUB_WORKSPACE}/.sdd-hub/bin/workflow-scripts/receive-task`);
+            return await workflow.synthesizeImplementationWithAI({
+              context,
+              core,
+              inputs: {
+                epicId: process.env.EPIC_ID,
+                taskId: process.env.TASK_ID,
+                taskName: process.env.TASK_NAME,
+                executionBranch: process.env.EXECUTION_BRANCH,
+              },
+            });
+      - name: Open draft PR
+        id: open-pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require(`${process.env.GITHUB_WORKSPACE}/.sdd-hub/bin/workflow-scripts/receive-task`);
+            return await workflow.openDraftPr({
+              github, context, core,
+              inputs: {
+                epicId: '${{ inputs.epic_id }}',
+                taskId: '${{ inputs.task_id }}',
+                taskName: '${{ inputs.task_name }}',
+                hubRepo: '${{ inputs.hub_repo }}',
+                hubPlanPr: '${{ inputs.hub_plan_pr }}',
+                hubPlanBranch: '${{ inputs.hub_plan_branch }}',
+                executionBranch: '${{ inputs.execution_branch }}',
+                aiOk: '${{ steps.ai_code.outputs.ai_ok }}',
+                aiSummary: '${{ steps.ai_code.outputs.ai_summary }}',
+              },
+            });
+
+      - name: Notify hub of PR creation
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require(`${process.env.GITHUB_WORKSPACE}/.sdd-hub/bin/workflow-scripts/receive-task`);
+            return await workflow.notifyHubOfPrCreation({
+              github, context, core,
+              inputs: {
+                epicId: '${{ inputs.epic_id }}',
+                taskId: '${{ inputs.task_id }}',
+                hubRepo: '${{ inputs.hub_repo }}',
+                hubPlanPr: '${{ inputs.hub_plan_pr }}',
+                prUrl: '${{ steps.open-pr.outputs.pr_url }}',
+                prNumber: '${{ steps.open-pr.outputs.pr_number }}',
+                executionBranch: '${{ inputs.execution_branch }}',
+              },
+            });

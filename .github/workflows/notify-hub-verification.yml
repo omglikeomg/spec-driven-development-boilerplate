@@ -1,0 +1,78 @@
+name: Notify Hub Verification
+
+on:
+  workflow_call:
+    inputs:
+      hub_repo:
+        required: true
+        type: string
+    secrets:
+      HUB_CROSS_REPO_TOKEN:
+        required: true
+      HUB_INTEGRITY_SECRET:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout hub repo (for SDD modules)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.hub_repo }}
+          token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          path: .sdd-hub
+
+      - name: Read SDD context
+        id: sdd-context
+        run: |
+          CONTEXT_FILE=".sdd/task-context.yaml"
+          if [ ! -f "$CONTEXT_FILE" ] && [ -f .sdd/context.yaml ]; then
+            CONTEXT_FILE=".sdd/context.yaml"
+          fi
+
+          if [ -f "$CONTEXT_FILE" ]; then
+            echo "epic_id=$(grep 'epic_id:' "$CONTEXT_FILE" | sed 's/.*: *\"//;s/\"$//')" >> "$GITHUB_OUTPUT"
+            echo "task_id=$(grep 'task_id:' "$CONTEXT_FILE" | sed 's/.*: *\"//;s/\"$//')" >> "$GITHUB_OUTPUT"
+            echo "hub_plan_branch=$(grep 'hub_plan_branch:' "$CONTEXT_FILE" | sed 's/.*: *\"//;s/\"$//')" >> "$GITHUB_OUTPUT"
+            echo "hub_plan_pr=$(grep 'hub_plan_pr:' "$CONTEXT_FILE" | sed 's/.*: *\"//;s/\"$//')" >> "$GITHUB_OUTPUT"
+            echo "has_context=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_context=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract from PR body (fallback)
+        id: fallback
+        if: steps.sdd-context.outputs.has_context != 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require(`${process.env.GITHUB_WORKSPACE}/.sdd-hub/bin/workflow-scripts/notify-hub-verification`);
+            return await workflow.extractContextFromPrBody({ context, core });
+
+      - name: Dispatch verification to hub
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HUB_CROSS_REPO_TOKEN }}
+          script: |
+            const workflow = require(`${process.env.GITHUB_WORKSPACE}/.sdd-hub/bin/workflow-scripts/notify-hub-verification`);
+            return await workflow.dispatchVerificationToHub({
+              github, context, core,
+              inputs: {
+                hubRepo: '${{ inputs.hub_repo }}',
+                epicId: '${{ steps.sdd-context.outputs.epic_id || steps.fallback.outputs.epic_id }}',
+                taskId: '${{ steps.sdd-context.outputs.task_id || steps.fallback.outputs.task_id }}',
+                hubPlanBranch: '${{ steps.sdd-context.outputs.hub_plan_branch || steps.fallback.outputs.hub_plan_branch }}',
+                hubPlanPr: '${{ steps.sdd-context.outputs.hub_plan_pr || steps.fallback.outputs.hub_plan_pr }}',
+              },
+            });

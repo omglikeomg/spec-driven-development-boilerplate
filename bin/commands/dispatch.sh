@@ -18,11 +18,26 @@ fi
 
 cd "${SDD_ROOT}"
 
-# Find the epic directory
-EPIC_DIR=$(find epics/active -maxdepth 1 -type d -name "${EPIC_ID}-*" | head -1)
+# Find the epic directory (search in multiple locations)
+EPIC_DIR=""
+for search_dir in epics/active epics/done epics; do
+  if [[ -d "${search_dir}" ]]; then
+    found=$(find "${search_dir}" -maxdepth 1 -type d -name "${EPIC_ID}-*" 2>/dev/null | head -1)
+    if [[ -n "${found}" ]]; then
+      EPIC_DIR="${found}"
+      break
+    fi
+    # Also try direct match (for MVPs or other non-numbered epics)
+    if [[ -d "${search_dir}/${EPIC_ID}" ]]; then
+      EPIC_DIR="${search_dir}/${EPIC_ID}"
+      break
+    fi
+  fi
+done
+
 if [[ -z "${EPIC_DIR}" ]]; then
-  log_error "Epic '${EPIC_ID}' not found in epics/active/"
-  log_info "Looking for directory matching: epics/active/${EPIC_ID}-*"
+  log_error "Epic '${EPIC_ID}' not found in epics/ directories"
+  log_info "Looking for: epics/active/${EPIC_ID}-* or epics/${EPIC_ID}/"
   exit 1
 fi
 

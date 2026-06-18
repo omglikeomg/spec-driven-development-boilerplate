@@ -1,0 +1,85 @@
+name: Epic Completion Check
+
+on:
+  workflow_call:
+    inputs:
+      epic_id:
+        required: true
+        type: string
+    outputs:
+      complete:
+        description: 'Whether the epic is complete'
+        value: ${{ jobs.check.outputs.complete }}
+      task_count:
+        description: 'Total task count'
+        value: ${{ jobs.check.outputs.task_count }}
+      done_tasks:
+        description: 'Number of done tasks'
+        value: ${{ jobs.check.outputs.done_tasks }}
+
+  workflow_dispatch:
+    inputs:
+      epic_id:
+        required: true
+        type: string
+        description: 'The epic ID to check'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      complete: ${{ steps.completion.outputs.complete }}
+      task_count: ${{ steps.completion.outputs.task_count }}
+      done_tasks: ${{ steps.completion.outputs.done_tasks }}
+
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Check completion
+        id: completion
+        uses: actions/github-script@v7
+        env:
+          EPIC_ID: ${{ inputs.epic_id || github.event.inputs.epic_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/epic-completion');
+            return await workflow.checkCompletion({ core });
+
+  notify:
+    needs: check
+    if: needs.check.outputs.complete == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Comment on epic tracking issues
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflow = require('./bin/workflow-scripts/epic-completion');
+            return await workflow.commentOnEpicIssues({
+              github, context,
+              inputs: {
+                epicId: '${{ inputs.epic_id || github.event.inputs.epic_id }}',
+                doneTasks: '${{ needs.check.outputs.done_tasks }}',
+                taskCount: '${{ needs.check.outputs.task_count }}',
+              },
+            });
+
+      - name: Attempt archive (dry-run first)
+        continue-on-error: true
+        env:
+          EPIC_ID: ${{ inputs.epic_id || github.event.inputs.epic_id }}
+        run: |
+          if [ -n "$EPIC_ID" ]; then
+            "$GITHUB_WORKSPACE"/bin/commands/wf-archive.sh "$EPIC_ID" --dry-run || echo "Dry-run check complete."
+          fi
